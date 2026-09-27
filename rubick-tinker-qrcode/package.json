@@ -1,68 +1,84 @@
 {
-  "name": "rubick-tinker-qrcode",
-  "pluginName": "二维码",
-  "pluginType": "ui",
-  "description": "二维码生成与扫描（移植自 tinker-qrcode）",
-  "author": "hanhanpig3",
-  "main": "index.html",
-  "logo": "logo.png",
-  "version": "0.1.0",
-  "preload": "preload.js",
-  "homePage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-qrcode",
-
-  "keywords": ["rubick", "plugin", "qrcode", "qr-code", "barcode", "electron"],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hanhanpig3/rubick-tinker-qrcode.git"
-  },
-
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org",
-    "access": "public"
-  },
-  "files": [
-    "index.html",
-    "preload.js",
-    "logo.png",
-    "plugin.json",
-    "package.json",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
-  ],
-
-  "rubick": {
-    "name": "二维码",
-    "icon": "logo.png",
-    "main": "index.html",
-    "preload": "preload.js",
-    "version": "0.1.0",
-    "author": "hanhanpig3"
-  },
-
-  "features": [
-    {
-      "code": "qrcode",
-      "explain": "生成二维码",
-      "cmds": [
-        "二维码",
-        "二维码生成",
-        "qrcode",
-        "生成二维码",
-        { "type": "text", "label": "二维码" }
-      ]
-    },
-    {
-      "code": "qrcode-scan",
-      "explain": "扫描二维码图片",
-      "cmds": [
-        "扫码",
-        "二维码扫描",
-        "qrcode-scan",
-        { "type": "img", "label": "二维码扫描" },
-        { "type": "files", "label": "二维码扫描", "fileType": "file", "match": "/.(png|jpe?g|bmp|webp)$/", "minNum": 1, "maxNum": 1 }
-      ]
-    }
-  ]
+    "name":  "rubick-tinker-qrcode",
+    "pluginName":  "二维码",
+    "pluginType":  "ui",
+    "description":  "二维码生成与扫描（移植自 tinker-qrcode）",
+    "author":  "hanhanpig3",
+    "main":  "index.html",
+    "logo":  "logo.png",
+    "version":  "0.1.2",
+    "preload":  "preload.js",
+    "homePage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-qrcode",
+    "keywords":  [
+                     "rubick",
+                     "plugin",
+                     "qrcode",
+                     "qr-code",
+                     "barcode",
+                     "electron"
+                 ],
+    "license":  "MIT",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/hanhanpig3/rubick-tinker-qrcode.git"
+                   },
+    "publishConfig":  {
+                          "registry":  "https://registry.npmjs.org",
+                          "access":  "public"
+                      },
+    "files":  [
+                  "index.html",
+                  "preload.js",
+                  "logo.png",
+                  "plugin.json",
+                  "package.json",
+                  "README.md",
+                  "CHANGELOG.md",
+                  "LICENSE"
+              ],
+    "rubick":  {
+                   "name":  "二维码",
+                   "icon":  "logo.png",
+                   "main":  "index.html",
+                   "preload":  "preload.js",
+                   "version":  "0.1.0",
+                   "author":  "hanhanpig3"
+               },
+    "features":  [
+                     {
+                         "code":  "qrcode",
+                         "explain":  "生成二维码",
+                         "cmds":  [
+                                      "二维码",
+                                      "二维码生成",
+                                      "qrcode",
+                                      "生成二维码",
+                                      {
+                                          "type":  "text",
+                                          "label":  "二维码"
+                                      }
+                                  ]
+                     },
+                     {
+                         "code":  "qrcode-scan",
+                         "explain":  "扫描二维码图片",
+                         "cmds":  [
+                                      "扫码",
+                                      "二维码扫描",
+                                      "qrcode-scan",
+                                      {
+                                          "type":  "img",
+                                          "label":  "二维码扫描"
+                                      },
+                                      {
+                                          "type":  "files",
+                                          "label":  "二维码扫描",
+                                          "fileType":  "file",
+                                          "match":  "/.(png|jpe?g|bmp|webp)$/",
+                                          "minNum":  1,
+                                          "maxNum":  1
+                                      }
+                                  ]
+                     }
+                 ]
 }

@@ -5,8 +5,8 @@
     "description":  "颜色工具箱：取色器、HEX/RGB/HSL/HSV 格式互转、配色方案生成、CSS 渐变生成器",
     "author":  "hanhanpig3",
     "main":  "index.html",
-    "logo":  "logo.png",
-    "version":  "0.1.1",
+    "logo":  "image:///C:/Users/aaaaa/AppData/Roaming/rubick/rubick-plugins-new/node_modules/rubick-dev-color/logo.png",
+    "version":  "0.1.2",
     "preload":  "preload.js",
     "homePage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-color",
     "features":  [

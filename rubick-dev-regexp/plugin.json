@@ -5,8 +5,8 @@
     "description":  "正则表达式测试工具：实时匹配高亮、捕获组展示、替换预览、常用正则速查模板",
     "author":  "hanhanpig3",
     "main":  "index.html",
-    "logo":  "logo.png",
-    "version":  "0.1.1",
+    "logo":  "image:///C:/Users/aaaaa/AppData/Roaming/rubick/rubick-plugins-new/node_modules/rubick-dev-regexp/logo.png",
+    "version":  "0.1.2",
     "preload":  "preload.js",
     "homePage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-regexp",
     "features":  [

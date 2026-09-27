@@ -5,8 +5,8 @@
     "description":  "开发者格式化工具：JSON/SQL/XML/CSS 格式化与压缩 + 文本对比 Diff",
     "author":  "hanhanpig3",
     "main":  "index.html",
-    "logo":  "logo.png",
-    "version":  "0.1.1",
+    "logo":  "image:///C:/Users/aaaaa/AppData/Roaming/rubick/rubick-plugins-new/node_modules/rubick-dev-formatter/logo.png",
+    "version":  "0.1.2",
     "preload":  "preload.js",
     "homePage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-json-editor",
     "features":  [

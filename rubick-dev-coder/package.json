@@ -1,6 +1,6 @@
 {
     "name":  "rubick-dev-coder",
-    "version":  "0.1.1",
+    "version":  "0.1.2",
     "description":  "开发者编码工具：Base64/URL/HTML实体/Hex/Unicode 编解码 + Unix时间戳转换 + MD5/SHA哈希计算",
     "main":  "index.html",
     "logo":  "logo.png",

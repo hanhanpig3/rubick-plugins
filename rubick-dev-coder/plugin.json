@@ -5,8 +5,8 @@
     "description":  "开发者编码工具：Base64/URL/HTML实体/Hex/Unicode 编解码 + Unix时间戳转换 + MD5/SHA哈希计算",
     "author":  "hanhanpig3",
     "main":  "index.html",
-    "logo":  "logo.png",
-    "version":  "0.1.1",
+    "logo":  "image:///C:/Users/aaaaa/AppData/Roaming/rubick/rubick-plugins-new/node_modules/rubick-dev-coder/logo.png",
+    "version":  "0.1.2",
     "preload":  "preload.js",
     "homePage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-base64",
     "features":  [

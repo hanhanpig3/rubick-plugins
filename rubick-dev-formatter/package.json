@@ -1,6 +1,6 @@
 {
     "name":  "rubick-dev-formatter",
-    "version":  "0.1.1",
+    "version":  "0.1.2",
     "description":  "开发者格式化工具：JSON/SQL/XML/CSS 格式化与压缩 + 文本对比 Diff",
     "main":  "index.html",
     "logo":  "logo.png",
