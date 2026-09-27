@@ -1,14 +1,39 @@
 {
-    "name":  "rubick-dev-regexp",
-    "version":  "0.1.2",
+    "pluginType":  "ui",
     "description":  "正则表达式测试工具：实时匹配高亮、捕获组展示、替换预览、常用正则速查模板",
     "main":  "index.html",
-    "logo":  "logo.png",
-    "pluginType":  "ui",
     "preload":  "preload.js",
+    "version":  "0.1.3",
     "author":  "hanhanpig3",
-    "license":  "MIT",
+    "logo":  "logo.png",
+    "name":  "rubick-dev-regexp",
+    "pluginName":  "正则表达式",
+    "features":  [
+                     {
+                         "code":  "regexp",
+                         "explain":  "正则表达式匹配测试与替换预览",
+                         "cmds":  [
+                                      "正则",
+                                      "正则表达式",
+                                      "regexp",
+                                      "regex",
+                                      "正则测试",
+                                      "dev-regexp"
+                                  ]
+                     },
+                     {
+                         "code":  "regexp-text",
+                         "explain":  "对选中文本进行正则匹配",
+                         "cmds":  [
+                                      {
+                                          "type":  "text",
+                                          "label":  "正则测试"
+                                      }
+                                  ]
+                     }
+                 ],
     "homepage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-regexp",
+    "license":  "MIT",
     "files":  [
                   "index.html",
                   "plugin.json",

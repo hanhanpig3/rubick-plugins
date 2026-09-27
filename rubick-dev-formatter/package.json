@@ -1,14 +1,56 @@
 {
-    "name":  "rubick-dev-formatter",
-    "version":  "0.1.2",
+    "pluginType":  "ui",
     "description":  "开发者格式化工具：JSON/SQL/XML/CSS 格式化与压缩 + 文本对比 Diff",
     "main":  "index.html",
-    "logo":  "logo.png",
-    "pluginType":  "ui",
     "preload":  "preload.js",
+    "version":  "0.1.3",
     "author":  "hanhanpig3",
-    "license":  "MIT",
+    "logo":  "logo.png",
+    "name":  "rubick-dev-formatter",
+    "pluginName":  "格式化工具",
+    "features":  [
+                     {
+                         "code":  "formatter",
+                         "explain":  "打开格式化工具（JSON/SQL/XML/CSS/Diff）",
+                         "cmds":  [
+                                      "格式化",
+                                      "json格式化",
+                                      "格式化工具",
+                                      "dev-formatter"
+                                  ]
+                     },
+                     {
+                         "code":  "json",
+                         "explain":  "JSON格式化/压缩/验证",
+                         "cmds":  [
+                                      "json",
+                                      "json format",
+                                      "json压缩",
+                                      "JSON"
+                                  ]
+                     },
+                     {
+                         "code":  "diff",
+                         "explain":  "文本对比工具",
+                         "cmds":  [
+                                      "文本对比",
+                                      "diff",
+                                      "对比文本",
+                                      "代码对比"
+                                  ]
+                     },
+                     {
+                         "code":  "sql-format",
+                         "explain":  "SQL格式化",
+                         "cmds":  [
+                                      "sql格式化",
+                                      "sql format",
+                                      "SQL格式化"
+                                  ]
+                     }
+                 ],
     "homepage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-json-editor",
+    "license":  "MIT",
     "files":  [
                   "index.html",
                   "plugin.json",
