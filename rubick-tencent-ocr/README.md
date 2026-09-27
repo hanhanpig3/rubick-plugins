@@ -122,6 +122,12 @@ npm install -g rubick-tencent-ocr
 
 ## 更新日志
 
+### v0.2.2 (2026-09-27)
+- **fix**: 表格/证件/票据等识别失败时自动降级为文字识别，不再白屏报错
+- **fix**: `showResultByType` 加 try-catch，响应解析异常时降级显示原始 JSON
+- **fix**: 错误日志增强，包含 RequestId 和响应体片段，方便排查接口问题
+- **refactor**: `recognizeFromFilePath` 复用 `recognizeBase64`，消除重复逻辑
+
 ### v0.2.1 (2026-09-27)
 - **feat**: 新增二次识别功能：已加载图片后切换识别类型，自动对同一图片重新识别，无需重新截图或粘贴
 - **feat**: 新增「重新识别」按钮，可手动触发重新识别
@@ -146,6 +152,7 @@ npm install -g rubick-tencent-ocr
 ## 说明
 
 - 图片以 Base64 发送，高精度版（GeneralAccurateOCR）支持 Base64 后不超过 10 MB 的图片，支持 PNG/JPG/JPEG/BMP/PDF 格式。
+- **每种 OCR 类型需在腾讯云控制台单独开通**（文字识别默认有免费额度，表格/发票/证件等需手动领取免费额度或购买）。未开通的类型调用会报错，插件会自动降级为文字识别。
 - 表格识别返回的 `Cells[]` 会转成 HTML `<table>`，支持 `rowspan`/`colspan`。
 - 富文本剪贴板：Excel/WPS 粘 HTML 自动识别为表格，其他软件粘纯文本。
 - 若未配置密钥，识别时会提示去设置；测试连接通过 = 密钥与签名正确。

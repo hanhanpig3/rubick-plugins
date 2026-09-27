@@ -456,6 +456,27 @@
 
   /* ---------- result display ---------- */
   function showResultByType(resp) {
+    try {
+      return _showResultByTypeInner(resp);
+    } catch (e) {
+      // 响应解析异常：降级显示原始 JSON
+      var textarea = document.getElementById('result');
+      var tableEl = document.getElementById('resultTable');
+      var fieldsEl = document.getElementById('resultFields');
+      tableEl.hidden = true;
+      fieldsEl.hidden = true;
+      textarea.hidden = false;
+      try {
+        textarea.value = JSON.stringify(resp, null, 2);
+      } catch (e2) {
+        textarea.value = String(resp);
+      }
+      updateToolbarVisibility();
+      setStatus('结果解析异常，已显示原始数据：' + e.message, 'error');
+      return textarea.value;
+    }
+  }
+  function _showResultByTypeInner(resp) {
     var cfg = typeCfg();
     currentResp = resp;
     var textarea = document.getElementById('result');
@@ -595,7 +616,8 @@
   }
 
   /* ---------- recognize ---------- */
-  function recognizeBase64(b64) {
+  function recognizeBase64(b64, opts) {
+    opts = opts || {};
     if (!window.tcOcr) { toast('插件环境异常：未加载 tcOcr', true); return; }
     var id = (config.secretId || '').trim();
     var key = (config.secretKey || '').trim();
@@ -617,6 +639,18 @@
       setStatus(hasContent ? '识别完成' : '识别完成（无内容）', 'ok');
       if (config.history && hasContent) pushHistory(currentSrc, JSON.stringify(resp));
     }).catch(function (e) {
+      // 表格/结构化识别失败时，自动降级为文字识别
+      var curCfg = typeCfg();
+      if (!opts.isFallback && curCfg.kind !== 'text') {
+        var reason = (e && e.message) ? String(e.message).split(':')[0] : '接口不可用';
+        toast('「' + curCfg.label + '」' + reason + '，已自动切换为文字识别', true);
+        config.type = 'print';
+        applyTypeTitle();
+        dbSet(CFG_KEY, config);
+        updateToolbarVisibility();
+        recognizeBase64(b64, { isFallback: true });
+        return;
+      }
       setStatus('');
       toast('识别失败：' + (e && e.message || e), true);
     });
@@ -632,23 +666,7 @@
     setStatus('读取图片…');
     try {
       var b64 = window.tcOcr.readImageFile(filePath);
-      setStatus('识别中…');
-      window.tcOcr.recognize({
-        secretId: (config.secretId || '').trim(),
-        secretKey: (config.secretKey || '').trim(),
-        region: (config.region || 'ap-guangzhou').trim(),
-        imageBase64: b64,
-        type: config.type,
-      }).then(function (resp) {
-        var txt = showResultByType(resp);
-        var kind = typeCfg().kind;
-        var hasContent = kind === 'text' ? !!txt : (kind === 'table' ? (resp.Cells && resp.Cells.length) : (window.tcOcr.fieldsOf(resp).length > 0));
-        setStatus(hasContent ? '识别完成' : '识别完成（无内容）', 'ok');
-        if (config.history && hasContent) pushHistory(filePath, JSON.stringify(resp));
-      }).catch(function (e) {
-        setStatus('');
-        toast('识别失败：' + (e && e.message || e), true);
-      });
+      recognizeBase64(b64);
     } catch (e) {
       setStatus('');
       toast('读取图片失败：' + e.message, true);

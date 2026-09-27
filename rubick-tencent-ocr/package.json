@@ -1,32 +1,11 @@
 {
+    "name":  "rubick-tencent-ocr",
     "description":  "腾讯云 OCR：高精度文字/手写体/表格/发票/身份证/银行卡/车牌等多类型识别，表格结果可粘到 Excel 保留格式",
     "main":  "index.html",
     "preload":  "preload.js",
-    "version":  "0.2.1",
+    "version":  "0.2.2",
     "author":  "hanhanpig3",
-    "bugs":  {
-                 "url":  "https://github.com/hanhanpig3/rubick-TencentOCR/issues"
-             },
     "logo":  "logo.png",
-    "repository":  {
-                       "type":  "git",
-                       "url":  "git+https://github.com/hanhanpig3/rubick-TencentOCR.git"
-                   },
-    "publishConfig":  {
-                          "registry":  "https://registry.npmjs.org",
-                          "access":  "public"
-                      },
-    "rubick":  {
-                   "name":  "腾讯OCR",
-                   "icon":  "logo.png",
-                   "main":  "index.html",
-                   "preload":  "preload.js",
-                   "version":  "0.2.0",
-                   "author":  "hanhanpig3"
-               },
-    "pluginType":  "ui",
-    "pluginName":  "腾讯OCR",
-    "name":  "rubick-tencent-ocr",
     "features":  [
                      {
                          "code":  "ocr",
@@ -159,6 +138,27 @@
                                   ]
                      }
                  ],
+    "publishConfig":  {
+                          "registry":  "https://registry.npmjs.org",
+                          "access":  "public"
+                      },
+    "rubick":  {
+                   "name":  "腾讯OCR",
+                   "icon":  "logo.png",
+                   "main":  "index.html",
+                   "preload":  "preload.js",
+                   "version":  "0.2.0",
+                   "author":  "hanhanpig3"
+               },
+    "pluginType":  "ui",
+    "pluginName":  "腾讯OCR",
+    "bugs":  {
+                 "url":  "https://github.com/hanhanpig3/rubick-TencentOCR/issues"
+             },
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/hanhanpig3/rubick-TencentOCR.git"
+                   },
     "homePage":  "https://cloud.tencent.com/product/ocr",
     "keywords":  [
                      "rubick",

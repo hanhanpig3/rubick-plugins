@@ -119,12 +119,17 @@ function recognize({ secretId, secretKey, region, imageBase64, type }) {
             const json = JSON.parse(body);
             const resp = (json && json.Response) || {};
             if (resp.Error) {
-              reject(new Error(resp.Error.Code + ': ' + resp.Error.Message));
+              // 附上原始响应体，方便排查接口问题
+              reject(new Error(
+                resp.Error.Code + ': ' + resp.Error.Message +
+                (resp.RequestId ? ' [RequestId:' + resp.RequestId + ']' : '')
+              ));
               return;
             }
             resolve(resp);
           } catch (e) {
-            reject(e);
+            // JSON 解析失败：附上原始响应片段
+            reject(new Error('响应解析失败: ' + e.message + ' | body: ' + body.slice(0, 300)));
           }
         });
       }
