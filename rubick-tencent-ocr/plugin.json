@@ -6,7 +6,7 @@
     "author":  "local",
     "main":  "index.html",
     "logo":  "image:///C:/Users/aaaaa/AppData/Roaming/rubick/rubick-plugins-new/node_modules/rubick-tencent-ocr/logo.png",
-    "version":  "0.1.2",
+    "version":  "0.2.1",
     "preload":  "preload.js",
     "homePage":  "https://cloud.tencent.com/product/ocr",
     "features":  [

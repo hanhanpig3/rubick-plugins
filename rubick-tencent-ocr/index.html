@@ -266,6 +266,7 @@
     <div class="head-menu">
       <select id="typeSelect" class="type-select"></select>
       <span class="flex"></span>
+      <button class="tool accent" id="reRecognizeBtn" hidden>重新识别</button>
       <button class="tool" id="captureBtn" hidden>截图</button>
       <button class="tool" id="copyBtn" hidden>复制</button>
       <button class="tool accent" id="copyExcelBtn" hidden>复制为 Excel</button>
@@ -433,6 +434,7 @@
     document.getElementById('placeholder').style.display = 'none';
     document.getElementById('clearImg').hidden = false;
     box.classList.add('has-img');
+    updateToolbarVisibility();
   }
   function clearImg() {
     currentSrc = '';
@@ -497,6 +499,8 @@
     document.getElementById('copyMdBtn').hidden = !hasResult || cfg.kind !== 'table';
     document.getElementById('copyCsvBtn').hidden = !hasResult || cfg.kind !== 'table';
     document.getElementById('copyJsonBtn').hidden = !hasResult || (cfg.kind !== 'table' && cfg.kind !== 'structured');
+    // 重新识别按钮：有图片即可用
+    document.getElementById('reRecognizeBtn').hidden = !currentSrc;
   }
 
   function applyTypeTitle() {
@@ -648,6 +652,26 @@
     } catch (e) {
       setStatus('');
       toast('读取图片失败：' + e.message, true);
+    }
+  }
+
+  /* ---------- re-recognize (二次识别) ---------- */
+  // 对当前已加载的图片用新的识别类型重新识别
+  function reRecognize() {
+    if (!currentSrc) {
+      toast('请先加载图片', true);
+      return;
+    }
+    var tLabel = (window.tcOcr && window.tcOcr.TYPES[config.type] && window.tcOcr.TYPES[config.type].label) || config.type;
+    setStatus('正在用「' + tLabel + '」重新识别…');
+    if (currentSrc.indexOf('data:') === 0) {
+      recognizeFromDataUrl(currentSrc);
+    } else if (currentSrc.indexOf('file:') === 0) {
+      // 提取原始文件路径（去掉 file:// 前缀）
+      var filePath = currentSrc.replace(/^file:\/\//, '').replace(/^file:/, '');
+      recognizeFromFilePath(filePath);
+    } else {
+      toast('无法识别的图片来源', true);
     }
   }
 
@@ -857,7 +881,12 @@
       config.type = this.value;
       dbSet(CFG_KEY, config);
       updateToolbarVisibility();
+      // 二次识别：有图片时自动用新类型重新识别
+      if (currentSrc) {
+        reRecognize();
+      }
     });
+    document.getElementById('reRecognizeBtn').addEventListener('click', reRecognize);
     document.getElementById('copyBtn').addEventListener('click', doCopy);
     document.getElementById('copyExcelBtn').addEventListener('click', doCopyExcel);
     document.getElementById('copyMdBtn').addEventListener('click', doCopyMd);
