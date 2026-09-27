@@ -1,36 +1,36 @@
 {
-  "name": "rubick-dev-regexp",
-  "pluginName": "正则表达式",
-  "pluginType": "ui",
-  "description": "正则表达式测试工具：实时匹配高亮、捕获组展示、替换预览、常用正则速查模板",
-  "author": "hanhanpig3",
-  "main": "index.html",
-  "logo": "logo.png",
-  "version": "0.1.0",
-  "preload": "preload.js",
-  "homePage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-regexp",
-  "features": [
-    {
-      "code": "regexp",
-      "explain": "正则表达式匹配测试与替换预览",
-      "cmds": [
-        "正则",
-        "正则表达式",
-        "regexp",
-        "regex",
-        "正则测试",
-        "dev-regexp"
-      ]
-    },
-    {
-      "code": "regexp-text",
-      "explain": "对选中文本进行正则匹配",
-      "cmds": [
-        {
-          "type": "text",
-          "label": "正则测试"
-        }
-      ]
-    }
-  ]
+    "name":  "rubick-dev-regexp",
+    "pluginName":  "正则表达式",
+    "pluginType":  "ui",
+    "description":  "正则表达式测试工具：实时匹配高亮、捕获组展示、替换预览、常用正则速查模板",
+    "author":  "hanhanpig3",
+    "main":  "index.html",
+    "logo":  "logo.png",
+    "version":  "0.1.1",
+    "preload":  "preload.js",
+    "homePage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-regexp",
+    "features":  [
+                     {
+                         "code":  "regexp",
+                         "explain":  "正则表达式匹配测试与替换预览",
+                         "cmds":  [
+                                      "正则",
+                                      "正则表达式",
+                                      "regexp",
+                                      "regex",
+                                      "正则测试",
+                                      "dev-regexp"
+                                  ]
+                     },
+                     {
+                         "code":  "regexp-text",
+                         "explain":  "对选中文本进行正则匹配",
+                         "cmds":  [
+                                      {
+                                          "type":  "text",
+                                          "label":  "正则测试"
+                                      }
+                                  ]
+                     }
+                 ]
 }

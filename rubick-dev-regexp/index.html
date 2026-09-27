@@ -226,9 +226,12 @@ document.getElementById('input').addEventListener('input',runMatch);
 // init from Rubick
 try{
   if(window.rubick&&window.rubick.hooks){
-    window.rubick.hooks.onSearch=function(payload){};
-    window.rubick.hooks.onEnter=function(payload){
-      if(payload&&payload.text){setTimeout(function(){document.getElementById('input').value=payload.text;runMatch()},100)}
+    window.rubick.hooks.onPluginEnter=function(data){
+      data=data||{};
+      var text=data.payload;
+      if(typeof text==='string'&&text.trim()){
+        setTimeout(function(){document.getElementById('input').value=text;runMatch()},100);
+      }
     };
   }
 }catch(e){}

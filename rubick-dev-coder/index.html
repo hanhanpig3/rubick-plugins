@@ -161,16 +161,6 @@ function decUnicode(str){return str.replace(/\\u([\da-f]{4})/gi,function(m,g){re
 function timestampPanel(){
   var wrap=document.createElement('div');wrap.className='io';
   var now=new Date();
-  // row: unix seconds
-  var row1=document.createElement('div');row1.className='ts-row';
-  var lab1=document.createElement('span');lab1.className='label';lab1.textContent='Unix时间戳(秒)';
-  var inp1=document.createElement('input');inp1.className='ts-input';inp1.value=Math.floor(Date.now()/1000);
-  var toDateBtn=document.createElement('button');toDateBtn.className='btn primary';toDateBtn.textContent='→ 日期';
-  var toNowBtn=document.createElement('button');toDateBtn.className='btn';toNowBtn.textContent='当前时间';
-  row1.append(lab1,inp1,ToDateBtn());
-  // We'll build properly below
-  // Rebuild cleanly
-  wrap.innerHTML='';
   // Section 1: timestamp → date
   var sec1=document.createElement('div');
   sec1.innerHTML='<div class="io-label">Unix 时间戳 → 可读日期</div>';
@@ -333,15 +323,13 @@ function md5(str){
 /* auto-fill from Rubick search payload */
 try{
   if(window.rubick&&window.rubick.hooks){
-    window.rubick.hooks.onSearch=function(payload){
-      // payload.code tells which feature triggered
-    };
-    window.rubick.hooks.onEnter=function(payload){
-      if(payload&&payload.text){
-        // fill input with search text
+    window.rubick.hooks.onPluginEnter=function(data){
+      data=data||{};
+      var text=data.payload;
+      if(typeof text==='string'&&text.trim()){
         setTimeout(function(){
           var ta=document.querySelector('textarea');
-          if(ta)ta.value=payload.text;
+          if(ta)ta.value=text;
         },100);
       }
     };

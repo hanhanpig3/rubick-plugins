@@ -256,9 +256,11 @@ document.getElementById('gradCSS').onclick=function(){copyText(this.textContent)
 /* ===== init ===== */
 try{
   if(window.rubick&&window.rubick.hooks){
-    window.rubick.hooks.onSearch=function(payload){};
-    window.rubick.hooks.onEnter=function(payload){
-      if(payload&&payload.text){var v=payload.text.trim();
+    window.rubick.hooks.onPluginEnter=function(data){
+      data=data||{};
+      var text=data.payload;
+      if(typeof text==='string'&&text.trim()){
+        var v=text.trim();
         if(/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)){
           if(!v.startsWith('#'))v='#'+v;
           document.getElementById('hexInput').value=v;

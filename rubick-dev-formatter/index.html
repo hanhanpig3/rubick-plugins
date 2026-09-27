@@ -271,10 +271,11 @@ function computeDiff(a,b){
 /* ===== init ===== */
 try{
   if(window.rubick&&window.rubick.hooks){
-    window.rubick.hooks.onSearch=function(payload){};
-    window.rubick.hooks.onEnter=function(payload){
-      if(payload&&payload.text){
-        setTimeout(function(){var ta=document.querySelector('textarea');if(ta)ta.value=payload.text},100);
+    window.rubick.hooks.onPluginEnter=function(data){
+      data=data||{};
+      var text=data.payload;
+      if(typeof text==='string'&&text.trim()){
+        setTimeout(function(){var ta=document.querySelector('textarea');if(ta)ta.value=text},100);
       }
     };
   }

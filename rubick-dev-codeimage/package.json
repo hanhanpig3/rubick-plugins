@@ -1,18 +1,18 @@
 {
-  "name": "rubick-dev-codeimage",
-  "version": "0.1.0",
-  "description": "代码截图工具：语法高亮（190+语言）、多主题切换、窗口美化、行号、一键导出 PNG 或复制到剪贴板",
-  "main": "index.html",
-  "logo": "logo.png",
-  "pluginType": "ui",
-  "preload": "preload.js",
-  "author": "hanhanpig3",
-  "license": "MIT",
-  "homepage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-code-image",
-  "files": [
-    "index.html",
-    "plugin.json",
-    "preload.js",
-    "logo.png"
-  ]
+    "name":  "rubick-dev-codeimage",
+    "version":  "0.1.1",
+    "description":  "代码截图工具：语法高亮（190+语言）、多主题切换、窗口美化、行号、一键导出 PNG 或复制到剪贴板",
+    "main":  "index.html",
+    "logo":  "logo.png",
+    "pluginType":  "ui",
+    "preload":  "preload.js",
+    "author":  "hanhanpig3",
+    "license":  "MIT",
+    "homepage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-code-image",
+    "files":  [
+                  "index.html",
+                  "plugin.json",
+                  "preload.js",
+                  "logo.png"
+              ]
 }

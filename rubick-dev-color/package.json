@@ -1,18 +1,18 @@
 {
-  "name": "rubick-dev-color",
-  "version": "0.1.0",
-  "description": "颜色工具箱：取色器、HEX/RGB/HSL/HSV 格式互转、配色方案生成、CSS 渐变生成器",
-  "main": "index.html",
-  "logo": "logo.png",
-  "pluginType": "ui",
-  "preload": "preload.js",
-  "author": "hanhanpig3",
-  "license": "MIT",
-  "homepage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-color",
-  "files": [
-    "index.html",
-    "plugin.json",
-    "preload.js",
-    "logo.png"
-  ]
+    "name":  "rubick-dev-color",
+    "version":  "0.1.1",
+    "description":  "颜色工具箱：取色器、HEX/RGB/HSL/HSV 格式互转、配色方案生成、CSS 渐变生成器",
+    "main":  "index.html",
+    "logo":  "logo.png",
+    "pluginType":  "ui",
+    "preload":  "preload.js",
+    "author":  "hanhanpig3",
+    "license":  "MIT",
+    "homepage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-color",
+    "files":  [
+                  "index.html",
+                  "plugin.json",
+                  "preload.js",
+                  "logo.png"
+              ]
 }

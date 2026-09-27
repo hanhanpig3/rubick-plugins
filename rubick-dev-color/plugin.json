@@ -1,36 +1,36 @@
 {
-  "name": "rubick-dev-color",
-  "pluginName": "颜色工具箱",
-  "pluginType": "ui",
-  "description": "颜色工具箱：取色器、HEX/RGB/HSL/HSV 格式互转、配色方案生成、CSS 渐变生成器",
-  "author": "hanhanpig3",
-  "main": "index.html",
-  "logo": "logo.png",
-  "version": "0.1.0",
-  "preload": "preload.js",
-  "homePage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-color",
-  "features": [
-    {
-      "code": "color",
-      "explain": "打开颜色工具箱（取色/格式转换/配色/渐变）",
-      "cmds": [
-        "颜色",
-        "颜色工具",
-        "color",
-        "取色",
-        "颜色转换",
-        "dev-color"
-      ]
-    },
-    {
-      "code": "color-text",
-      "explain": "转换选中的颜色值",
-      "cmds": [
-        {
-          "type": "text",
-          "label": "颜色转换"
-        }
-      ]
-    }
-  ]
+    "name":  "rubick-dev-color",
+    "pluginName":  "颜色工具箱",
+    "pluginType":  "ui",
+    "description":  "颜色工具箱：取色器、HEX/RGB/HSL/HSV 格式互转、配色方案生成、CSS 渐变生成器",
+    "author":  "hanhanpig3",
+    "main":  "index.html",
+    "logo":  "logo.png",
+    "version":  "0.1.1",
+    "preload":  "preload.js",
+    "homePage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-color",
+    "features":  [
+                     {
+                         "code":  "color",
+                         "explain":  "打开颜色工具箱（取色/格式转换/配色/渐变）",
+                         "cmds":  [
+                                      "颜色",
+                                      "颜色工具",
+                                      "color",
+                                      "取色",
+                                      "颜色转换",
+                                      "dev-color"
+                                  ]
+                     },
+                     {
+                         "code":  "color-text",
+                         "explain":  "转换选中的颜色值",
+                         "cmds":  [
+                                      {
+                                          "type":  "text",
+                                          "label":  "颜色转换"
+                                      }
+                                  ]
+                     }
+                 ]
 }

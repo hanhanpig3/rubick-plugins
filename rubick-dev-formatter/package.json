@@ -1,18 +1,18 @@
 {
-  "name": "rubick-dev-formatter",
-  "version": "0.1.0",
-  "description": "开发者格式化工具：JSON/SQL/XML/CSS 格式化与压缩 + 文本对比 Diff",
-  "main": "index.html",
-  "logo": "logo.png",
-  "pluginType": "ui",
-  "preload": "preload.js",
-  "author": "hanhanpig3",
-  "license": "MIT",
-  "homepage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-json-editor",
-  "files": [
-    "index.html",
-    "plugin.json",
-    "preload.js",
-    "logo.png"
-  ]
+    "name":  "rubick-dev-formatter",
+    "version":  "0.1.1",
+    "description":  "开发者格式化工具：JSON/SQL/XML/CSS 格式化与压缩 + 文本对比 Diff",
+    "main":  "index.html",
+    "logo":  "logo.png",
+    "pluginType":  "ui",
+    "preload":  "preload.js",
+    "author":  "hanhanpig3",
+    "license":  "MIT",
+    "homepage":  "https://github.com/liriliri/tinker/tree/master/plugins/tinker-json-editor",
+    "files":  [
+                  "index.html",
+                  "plugin.json",
+                  "preload.js",
+                  "logo.png"
+              ]
 }

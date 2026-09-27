@@ -299,14 +299,19 @@ document.getElementById('btnCopy').onclick=exportPNG;
 /* ===== init ===== */
 try{
   if(window.rubick&&window.rubick.hooks){
-    window.rubick.hooks.onSearch=function(payload){};
-    window.rubick.hooks.onEnter=function(payload){
-      if(payload&&payload.text){setTimeout(function(){document.getElementById('codeInput').value=payload.text;renderCode()},200)}
+    window.rubick.hooks.onPluginEnter=function(data){
+      data=data||{};
+      var text=data.payload;
+      if(typeof text==='string'&&text.trim()){
+        setTimeout(function(){document.getElementById('codeInput').value=text;renderCode()},200);
+      }
     };
   }
 }catch(e){}
 // load extra languages that aren't in the core build
-['typescript','go','rust','yaml'].forEach(function(l){if(hljs.getLanguage(l)===undefined)loadLang(l)});
+if(typeof hljs!=='undefined'){
+  ['typescript','go','rust','yaml'].forEach(function(l){if(hljs.getLanguage(l)===undefined)loadLang(l)});
+}
 renderCode();updateBg();
 </script>
 </body>
