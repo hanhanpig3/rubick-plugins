@@ -1,0 +1,22 @@
+{
+  "name": "rubick-plugins",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Rubick 插件集合 — 备忘快贴项目插件矩阵",
+  "author": "hanhanpig3",
+  "license": "MIT",
+  "repository": "https://github.com/hanhanpig3/rubick-plugins",
+  "workspaces": [
+    "rubick-memo",
+    "rubick-tencent-ocr",
+    "rubick-tinker-qrcode",
+    "rubick-dev-coder",
+    "rubick-dev-formatter",
+    "rubick-dev-regexp",
+    "rubick-dev-color",
+    "rubick-dev-codeimage"
+  ],
+  "scripts": {
+    "publish:all": "npm publish --workspace=rubick-memo --workspace=rubick-tencent-ocr --workspace=rubick-tinker-qrcode --workspace=rubick-dev-coder --workspace=rubick-dev-formatter --workspace=rubick-dev-regexp --workspace=rubick-dev-color --workspace=rubick-dev-codeimage"
+  }
+}

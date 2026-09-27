@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>代码截图</title>
+<style>
+  :root{--bg:#fff;--text:#1f2329;--sub:#8a919f;--border:#e8eaf0;--primary:#006eff;--soft:#e6f0ff;--danger:#ef4f4f;--radius:10px}
+  @media(prefers-color-scheme:dark){:root{--bg:#252533;--text:#e8eaf0;--sub:#9aa1ad;--border:#38384a;--soft:#1c2a44;--danger:#ff7875}}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;overflow:hidden}
+  .app{display:flex;height:100vh}
+  .sidebar{width:300px;flex:none;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:auto}
+  .sidebar-section{padding:10px 14px;border-bottom:1px solid var(--border)}
+  .sidebar-section h3{font-size:12px;color:var(--sub);margin-bottom:6px;font-weight:400}
+  .toolbar{display:flex;gap:6px;flex-wrap:wrap}
+  .btn{border:1px solid var(--border);background:transparent;color:var(--text);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{background:var(--soft);border-color:var(--primary)}
+  .btn.primary{background:linear-gradient(135deg,#2f7bff,#006eff);color:#fff;border:none;font-weight:600}
+  select{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:4px 8px;font-size:12px;outline:none;width:100%}
+  .opt-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .opt-row label{font-size:11px;color:var(--sub);width:60px;flex:none}
+  .opt-row input[type=range]{flex:1;height:4px;-webkit-appearance:none;background:var(--border);border-radius:2px}
+  .opt-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--primary);cursor:pointer}
+  .opt-row input[type=color]{width:28px;height:24px;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:0}
+  .opt-row input[type=checkbox]{cursor:pointer}
+  .code-area{flex:1;display:flex;flex-direction:column;min-width:0}
+  textarea{flex:1;width:100%;border:none;background:var(--bg);color:var(--text);padding:14px;font-size:14px;line-height:1.6;resize:none;outline:none;font-family:"Cascadia Code",Consolas,monospace;border-bottom:1px solid var(--border)}
+  .preview-area{flex:none;height:50%;overflow:auto;background:#f0f0f0;padding:20px;display:flex;align-items:center;justify-content:center}
+  .preview-area.dark{background:#1a1a2e}
+  /* code card */
+  .code-card{border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2);background:#282c34;max-width:100%}
+  .code-card-header{display:flex;align-items:center;gap:6px;padding:12px 16px;background:rgba(0,0,0,.2)}
+  .code-dot{width:12px;height:12px;border-radius:50%}
+  .code-title{margin-left:8px;font-size:13px;color:#abb2bf;font-family:monospace}
+  .code-body{padding:16px 20px;overflow:auto;max-height:400px}
+  .code-body pre{font-family:"Cascadia Code","Fira Code",Consolas,monospace;font-size:14px;line-height:1.6;white-space:pre;tab-size:2}
+  .code-body code{font-family:inherit}
+  /* highlight.js theme: atom-one-dark */
+  .hljs{color:#abb2bf;background:transparent}
+  .hljs-comment,.hljs-quote{color:#5c6370;font-style:italic}
+  .hljs-doctag,.hljs-keyword,.hljs-formula{color:#c678dd}
+  .hljs-section,.hljs-name,.hljs-selector-tag,.hljs-deletion,.hljs-subst{color:#e06c75}
+  .hljs-literal{color:#56b6c2}
+  .hljs-string,.hljs-regexp,.hljs-addition,.hljs-attribute,.hljs-meta .hljs-string{color:#98c379}
+  .hljs-attr,.hljs-variable,.hljs-template-variable,.hljs-type,.hljs-selector-id,.hljs-selector-class{color:#d19a66}
+  .hljs-number,.hljs-symbol,.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-attr,.hljs-selector-pseudo{color:#56b6c2}
+  .hljs-title,.hljs-built_in,.hljs-class .hljs-title{color:#e6c07b}
+  .hljs-emphasis{font-style:italic}
+  .hljs-strong{font-weight:700}
+  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;z-index:50}
+  .line-numbers{counter-reset:ln;display:inline-block;text-align:right;color:#5c6370;user-select:none;padding-right:12px;margin-right:12px;border-right:1px solid #3a3f4b}
+  .ln{display:block;counter-increment:ln}
+  .ln:before{content:counter(ln)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <h3>代码输入</h3>
+      <textarea id="codeInput" rows="6" placeholder="在此粘贴代码..." spellcheck="false">function hello(name) {
+  console.log(`Hello, ${name}!`);
+  return true;
+}</textarea>
+    </div>
+    <div class="sidebar-section">
+      <h3>语言</h3>
+      <select id="langSelect">
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+        <option value="csharp">C#</option>
+        <option value="go">Go</option>
+        <option value="rust">Rust</option>
+        <option value="php">PHP</option>
+        <option value="ruby">Ruby</option>
+        <option value="sql">SQL</option>
+        <option value="json">JSON</option>
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+        <option value="bash">Bash/Shell</option>
+        <option value="yaml">YAML</option>
+        <option value="xml">XML</option>
+        <option value="markdown">Markdown</option>
+        <option value="plaintext">纯文本</option>
+      </select>
+    </div>
+    <div class="sidebar-section">
+      <h3>主题</h3>
+      <select id="themeSelect">
+        <option value="atom-one-dark">Atom One Dark</option>
+        <option value="github-dark">GitHub Dark</option>
+        <option value="vs2015">VS 2015</option>
+        <option value="monokai">Monokai</option>
+        <option value="androidstudio">Android Studio</option>
+      </select>
+    </div>
+    <div class="sidebar-section">
+      <h3>窗口样式</h3>
+      <div class="opt-row"><label>背景色</label><input type="color" id="bgColor" value="#282c34" /><input type="text" id="bgColorText" value="#282c34" style="width:80px;border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;background:transparent;color:var(--text)" /></div>
+      <div class="opt-row"><label>圆角</label><input type="range" id="radiusSlider" min="0" max="24" value="12" /><span style="font-size:11px;color:var(--sub)" id="radiusVal">12px</span></div>
+      <div class="opt-row"><label>内边距</label><input type="range" id="padSlider" min="0" max="48" value="20" /><span style="font-size:11px;color:var(--sub)" id="padVal">20px</span></div>
+      <div class="opt-row"><label>字号</label><input type="range" id="fontSlider" min="10" max="22" value="14" /><span style="font-size:11px;color:var(--sub)" id="fontVal">14px</span></div>
+      <div class="opt-row"><label>行号</label><input type="checkbox" id="lineNumCheck" checked /></div>
+      <div class="opt-row"><label>窗口标题</label><input type="checkbox" id="titleCheck" checked /></div>
+      <div class="opt-row"><label>标题文字</label><input type="text" id="titleText" value="untitled" style="flex:1;border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;background:transparent;color:var(--text)" /></div>
+    </div>
+    <div class="sidebar-section">
+      <h3>背景</h3>
+      <select id="bgSelect">
+        <option value="light">浅色</option>
+        <option value="dark">深色</option>
+        <option value="solid-teal">纯色 青绿</option>
+        <option value="solid-purple">纯色 紫</option>
+        <option value="solid-orange">纯色 橙</option>
+        <option value="gradient-sunset">渐变 日落</option>
+        <option value="gradient-ocean">渐变 海洋</option>
+        <option value="gradient-forest">渐变 森林</option>
+      </select>
+    </div>
+    <div class="sidebar-section">
+      <h3>操作</h3>
+      <div class="toolbar">
+        <button class="btn primary" id="btnExport">📷 导出 PNG</button>
+        <button class="btn" id="btnCopy">复制图片</button>
+      </div>
+    </div>
+  </div>
+  <div class="code-area">
+    <div class="preview-area" id="previewArea">
+      <div class="code-card" id="codeCard">
+        <div class="code-card-header" id="cardHeader">
+          <div class="code-dot" style="background:#ff5f56"></div>
+          <div class="code-dot" style="background:#ffbd2e"></div>
+          <div class="code-dot" style="background:#27c93f"></div>
+          <span class="code-title" id="cardTitle">untitled</span>
+        </div>
+        <div class="code-body" id="codeBody">
+          <pre><code id="hlCode"></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+"use strict";
+/* load additional languages */
+function loadLang(name){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/'+name+'.min.js';s.onload=function(){renderCode()};document.head.appendChild(s)}
+
+/* clipboard helper */
+function copyImageToClipboard(dataUrl){
+  if(window.rubick&&window.rubick.copyImage){
+    window.rubick.copyImage(dataUrl);return true;
+  }
+  return false;
+}
+function copyText(text){
+  if(window.rubick&&window.rubick.copyText){window.rubick.copyText(text);return true}
+  var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');document.body.removeChild(ta);return true}catch(e){document.body.removeChild(ta);return false}
+}
+function showToast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},2000)}
+
+/* ===== theme styles ===== */
+var THEME_STYLES={
+  'atom-one-dark':'',
+  'github-dark':'',
+  'vs2015':'',
+  'monokai':'',
+  'androidstudio':'',
+};
+var THEME_BG={
+  'atom-one-dark':'#282c34',
+  'github-dark':'#0d1117',
+  'vs2015':'#1e1e1e',
+  'monokai':'#272822',
+  'androidstudio':'#282b2e',
+};
+
+/* ===== backgrounds ===== */
+var BG_STYLES={
+  'light':{area:'background:#f0f0f0'},
+  'dark':{area:'background:#1a1a2e'},
+  'solid-teal':{area:'background:#0d7377'},
+  'solid-purple':{area:'background:#2d1b69'},
+  'solid-orange':{area:'background:#e85d04'},
+  'gradient-sunset':{area:'background:linear-gradient(135deg,#ee7752,#e73c7e,#23a6d5,#23d5ab)'},
+  'gradient-ocean':{area:'background:linear-gradient(135deg,#667eea,#764ba2)'},
+  'gradient-forest':{area:'background:linear-gradient(135deg,#134e5e,#71b280)'},
+};
+
+/* ===== render ===== */
+function renderCode(){
+  var code=document.getElementById('codeInput').value;
+  var lang=document.getElementById('langSelect').value;
+  var theme=document.getElementById('themeSelect').value;
+  var bg=THEME_BG[theme]||'#282c34';
+  // update card background
+  document.getElementById('bgColor').value=bg;
+  document.getElementById('bgColorText').value=bg;
+  document.getElementById('codeCard').style.background=bg;
+  // highlight
+  var hl;
+  try{
+    if(lang==='plaintext'||!hljs.getLanguage(lang)){hl=escapeHtml(code)}
+    else{hl=hljs.highlight(code,{language:lang}).value}
+  }catch(e){hl=escapeHtml(code)}
+  // line numbers
+  var showLines=document.getElementById('lineNumCheck').checked;
+  if(showLines){
+    var lines=hl.split('\n');
+    var lnHtml='<span class="line-numbers">';
+    var codeHtml='';
+    for(var i=0;i<lines.length;i++){lnHtml+='<span class="ln"></span>';codeHtml+=lines[i]+(i<lines.length-1?'\n':'')}
+    document.getElementById('hlCode').innerHTML=lnHtml+'</span>'+codeHtml;
+  }else{
+    document.getElementById('hlCode').innerHTML=hl;
+  }
+  // styling
+  var pad=document.getElementById('padSlider').value+'px';
+  var fs=document.getElementById('fontSlider').value+'px';
+  var radius=document.getElementById('radiusSlider').value+'px';
+  document.getElementById('codeBody').style.padding=pad;
+  document.getElementById('codeBody').style.fontSize=fs;
+  document.getElementById('codeCard').style.borderRadius=radius;
+  // title
+  var showTitle=document.getElementById('titleCheck').checked;
+  document.getElementById('cardHeader').style.display=showTitle?'flex':'none';
+  document.getElementById('cardTitle').textContent=document.getElementById('titleText').value||'untitled';
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function updateBg(){
+  var bg=document.getElementById('bgSelect').value;
+  var style=BG_STYLES[bg]||BG_STYLES['light'];
+  document.getElementById('previewArea').style.cssText=style.area+';padding:20px;display:flex;align-items:center;justify-content:center;overflow:auto;height:50%;flex:none;border-top:1px solid var(--border)';
+  if(bg==='dark'||bg==='solid-purple'||bg==='solid-teal'||bg==='gradient-ocean'||bg==='gradient-sunset'||bg==='gradient-forest'){
+    document.getElementById('previewArea').classList.add('dark');
+  }else{
+    document.getElementById('previewArea').classList.remove('dark');
+  }
+}
+
+/* ===== events ===== */
+['codeInput','langSelect','themeSelect','padSlider','fontSlider','radiusSlider','lineNumCheck','titleCheck','titleText'].forEach(function(id){
+  var el=document.getElementById(id);
+  el.addEventListener('input',renderCode);
+  el.addEventListener('change',renderCode);
+});
+document.getElementById('bgSelect').addEventListener('change',updateBg);
+document.getElementById('bgColor').addEventListener('input',function(e){
+  document.getElementById('bgColorText').value=e.target.value;
+  document.getElementById('codeCard').style.background=e.target.value;
+});
+document.getElementById('bgColorText').addEventListener('input',function(e){
+  if(/^#[0-9a-fA-F]{6}$/.test(e.target.value)){
+    document.getElementById('bgColor').value=e.target.value;
+    document.getElementById('codeCard').style.background=e.target.value;
+  }
+});
+document.getElementById('radiusSlider').addEventListener('input',function(e){document.getElementById('radiusVal').textContent=e.target.value+'px'});
+document.getElementById('padSlider').addEventListener('input',function(e){document.getElementById('padVal').textContent=e.target.value+'px'});
+document.getElementById('fontSlider').addEventListener('input',function(e){document.getElementById('fontVal').textContent=e.target.value+'px'});
+
+/* ===== export ===== */
+function exportPNG(){
+  // load html2canvas dynamically
+  if(typeof html2canvas==='undefined'){
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload=function(){doExport()};
+    document.head.appendChild(s);
+    showToast('正在加载导出库...');
+  }else{doExport()}
+}
+function doExport(){
+  var card=document.getElementById('codeCard');
+  html2canvas(card,{scale:2,backgroundColor:null,logging:false}).then(function(canvas){
+    var dataUrl=canvas.toDataURL('image/png');
+    // try to copy to clipboard via preload
+    if(copyImageToClipboard(dataUrl)){
+      showToast('图片已复制到剪贴板！');
+    }else{
+      // download
+      var a=document.createElement('a');
+      a.href=dataUrl;a.download='code-screenshot-'+Date.now()+'.png';
+      a.click();showToast('图片已下载！');
+    }
+  }).catch(function(e){showToast('导出失败: '+e.message)});
+}
+document.getElementById('btnExport').onclick=exportPNG;
+document.getElementById('btnCopy').onclick=exportPNG;
+
+/* ===== init ===== */
+try{
+  if(window.rubick&&window.rubick.hooks){
+    window.rubick.hooks.onSearch=function(payload){};
+    window.rubick.hooks.onEnter=function(payload){
+      if(payload&&payload.text){setTimeout(function(){document.getElementById('codeInput').value=payload.text;renderCode()},200)}
+    };
+  }
+}catch(e){}
+// load extra languages that aren't in the core build
+['typescript','go','rust','yaml'].forEach(function(l){if(hljs.getLanguage(l)===undefined)loadLang(l)});
+renderCode();updateBg();
+</script>
+</body>
+</html>

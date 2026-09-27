@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>二维码</title>
+<style>
+  :root {
+    --bg: #ffffff; --text: #1f2329; --text-sub: #8a919f;
+    --border: #e8eaf0; --primary: #006eff; --primary-soft: #e6f0ff;
+    --danger: #ef4f4f; --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #252533; --text: #e8eaf0; --text-sub: #9aa1ad;
+      --border: #38384a; --primary-soft: #1c2a44; --danger: #ff7875;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 14px; overflow: hidden;
+  }
+  .app { display: flex; flex-direction: column; height: 100vh; }
+  .head-menu {
+    display: flex; align-items: center; gap: 6px; padding: 10px 14px; flex-wrap: wrap;
+  }
+  .flex { flex: 1; }
+  .tool {
+    border: 1px solid var(--border); background: transparent; color: var(--text);
+    border-radius: 8px; padding: 4px 12px; font-size: 12px; cursor: pointer;
+    transition: filter .15s; white-space: nowrap;
+  }
+  .tool:hover { filter: brightness(.95); background: var(--primary-soft); border-color: var(--primary); }
+  .tool.primary { background: linear-gradient(135deg, #2f7bff, #006eff); color: #fff; border: none; font-weight: 600; }
+  .tool.accent { background: var(--primary-soft); color: var(--primary); border-color: var(--primary); font-weight: 600; }
+  .main-content { flex: 1; display: flex; gap: 12px; padding: 0 14px; min-height: 0; }
+  .left-box { width: 42%; max-width: 320px; flex: none; display: flex; flex-direction: column; gap: 10px; }
+  .qr-preview {
+    flex: 1; min-height: 0; border: 1px dashed var(--border); border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--primary-soft); position: relative; overflow: hidden;
+  }
+  .qr-preview canvas { max-width: 100%; max-height: 100%; }
+  .placeholder { text-align: center; color: var(--text-sub); padding: 20px; }
+  .placeholder .big { font-size: 40px; margin-bottom: 8px; opacity: .7; }
+  .right-box { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .input-area {
+    flex: 1; width: 100%; border: 1px solid var(--border); border-radius: var(--radius);
+    background: transparent; color: var(--text); padding: 12px; font-size: 14px;
+    line-height: 1.6; resize: none; outline: none; font-family: inherit;
+  }
+  .input-area:focus { border-color: var(--primary); }
+  .options {
+    display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 8px;
+  }
+  .opt-group { display: flex; align-items: center; gap: 4px; }
+  .opt-group label { font-size: 11px; color: var(--text-sub); }
+  .opt-group input[type=range] { width: 70px; }
+  .opt-group input[type=color] { width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; padding: 0; }
+  .opt-group select {
+    border: 1px solid var(--border); background: var(--primary-soft); color: var(--text);
+    border-radius: 6px; padding: 2px 6px; font-size: 11px; outline: none;
+  }
+  .status { padding: 6px 14px 10px; font-size: 12px; color: var(--text-sub); min-height: 18px; }
+  .status.error { color: var(--danger); }
+  .status.ok { color: #2bb673; }
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%);
+    background: rgba(0,0,0,.82); color: #fff; padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; z-index: 50; max-width: 90%; word-break: break-all;
+  }
+  .scan-result {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; box-shadow: 0 12px 40px rgba(0,0,0,.2); z-index: 100;
+    max-width: 400px; width: 90%;
+  }
+  .scan-result h3 { font-size: 15px; margin-bottom: 10px; }
+  .scan-result .result-text {
+    background: var(--primary-soft); border-radius: 8px; padding: 10px;
+    font-size: 13px; word-break: break-all; white-space: pre-wrap; margin-bottom: 12px;
+    max-height: 200px; overflow-y: auto;
+  }
+  .scan-result .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .drop-overlay {
+    position: fixed; inset: 0; background: rgba(0,110,255,.15); z-index: 90;
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+    color: var(--primary); pointer-events: none;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="head-menu">
+      <span style="font-size:13px;font-weight:600;color:var(--primary)">📱 二维码</span>
+      <span class="flex"></span>
+      <button class="tool" id="generateBtn">生成</button>
+      <button class="tool" id="downloadBtn" hidden>下载</button>
+      <button class="tool" id="copyBtn" hidden>复制</button>
+      <button class="tool accent" id="scanBtn">扫码</button>
+      <button class="tool" id="clearBtn">清除</button>
+    </div>
+    <div class="main-content">
+      <div class="left-box">
+        <div class="qr-preview" id="qrPreview">
+          <div class="placeholder" id="qrPlaceholder">
+            <div class="big">📱</div>
+            <div>输入内容后点击「生成」<br/>或点「扫码」扫描图片</div>
+          </div>
+          <canvas id="qrCanvas" hidden></canvas>
+        </div>
+        <div class="options">
+          <div class="opt-group">
+            <label>尺寸</label>
+            <input type="range" id="sizeSlider" min="100" max="600" value="300" step="10" />
+            <span id="sizeVal" style="font-size:11px;min-width:30px">300</span>
+          </div>
+          <div class="opt-group">
+            <label>前景</label>
+            <input type="color" id="fgColor" value="#000000" />
+          </div>
+          <div class="opt-group">
+            <label>背景</label>
+            <input type="color" id="bgColor" value="#ffffff" />
+          </div>
+          <div class="opt-group">
+            <label>纠错</label>
+            <select id="correctLevel">
+              <option value="L">L</option>
+              <option value="M" selected>M</option>
+              <option value="Q">Q</option>
+              <option value="H">H</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="right-box">
+        <textarea id="textInput" class="input-area" placeholder="输入要生成二维码的内容…&#10;&#10;支持文本、网址、JSON 等任意内容"></textarea>
+      </div>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="preload.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var canvas = document.getElementById('qrCanvas');
+  var placeholder = document.getElementById('qrPlaceholder');
+  var textInput = document.getElementById('textInput');
+  var statusEl = document.getElementById('status');
+  var qrDataUrl = '';
+
+  /* ---------- utils ---------- */
+  var toastTimer = null;
+  function toast(msg, isError) {
+    var el = document.querySelector('.toast');
+    if (!el) { el = document.createElement('div'); el.className = 'toast'; document.body.appendChild(el); }
+    el.textContent = msg;
+    el.style.background = isError ? 'rgba(190,40,40,.92)' : 'rgba(0,0,0,.82)';
+    el.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.style.display = 'none'; }, 2500);
+  }
+  function setStatus(msg, cls) {
+    statusEl.textContent = msg || '';
+    statusEl.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  /* ---------- QR generation ---------- */
+  function generateQR() {
+    var text = textInput.value.trim();
+    if (!text) { toast('请输入内容', true); return; }
+    var size = parseInt(document.getElementById('sizeSlider').value);
+    var fgColor = document.getElementById('fgColor').value;
+    var bgColor = document.getElementById('bgColor').value;
+    var correctLevel = document.getElementById('correctLevel').value;
+    var level = { L: 'L', M: 'M', Q: 'Q', H: 'H' }[correctLevel] || 'M';
+
+    try {
+      // Use qrcode-generator library
+      var qr = qrcode(0, level);
+      qr.addData(text);
+      qr.make();
+
+      var moduleCount = qr.getModuleCount();
+      var ratio = size / moduleCount;
+      var pixelSize = Math.floor(ratio);
+      var offset = Math.floor((size - pixelSize * moduleCount) / 2);
+
+      canvas.width = size;
+      canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = fgColor;
+      for (var r = 0; r < moduleCount; r++) {
+        for (var c = 0; c < moduleCount; c++) {
+          if (qr.isDark(r, c)) {
+            ctx.fillRect(offset + c * pixelSize, offset + r * pixelSize, pixelSize, pixelSize);
+          }
+        }
+      }
+
+      qrDataUrl = canvas.toDataURL('image/png');
+      canvas.hidden = false;
+      placeholder.style.display = 'none';
+      document.getElementById('downloadBtn').hidden = false;
+      document.getElementById('copyBtn').hidden = false;
+      setStatus('生成成功', 'ok');
+    } catch (e) {
+      setStatus('');
+      toast('生成失败: ' + e.message, true);
+    }
+  }
+
+  /* ---------- Download ---------- */
+  function downloadQR() {
+    if (!qrDataUrl) return;
+    var link = document.createElement('a');
+    link.href = qrDataUrl;
+    link.download = 'qrcode-' + Date.now() + '.png';
+    link.click();
+    toast('已下载');
+  }
+
+  /* ---------- Copy ---------- */
+  function copyQR() {
+    if (!qrDataUrl) return;
+    // Try to copy as image
+    var img = new Image();
+    img.onload = function () {
+      try {
+        var tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = img.width;
+        tmpCanvas.height = img.height;
+        tmpCanvas.getContext('2d').drawImage(img, 0, 0);
+        var blob = null;
+        tmpCanvas.toBlob(function (b) {
+          blob = b;
+          if (navigator.clipboard && window.ClipboardItem) {
+            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+              .then(function () { toast('已复制二维码图片'); })
+              .catch(function () {
+                // Fallback: copy as text
+                if (window.qrcode && window.qrcode.copyText) {
+                  window.qrcode.copyText(qrDataUrl);
+                  toast('已复制（数据URL）');
+                }
+              });
+          } else {
+            if (window.qrcode && window.qrcode.copyText) {
+              window.qrcode.copyText(qrDataUrl);
+              toast('已复制（数据URL）');
+            }
+          }
+        });
+      } catch (e) {
+        toast('复制失败: ' + e.message, true);
+      }
+    };
+    img.src = qrDataUrl;
+  }
+
+  /* ---------- Scan ---------- */
+  function scanQR(dataUrl) {
+    var img = new Image();
+    img.onload = function () {
+      var tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = img.width;
+      tmpCanvas.height = img.height;
+      var ctx = tmpCanvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var imageData = ctx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+      var result = jsQR(imageData.data, tmpCanvas.width, tmpCanvas.height);
+      if (result && result.data) {
+        showScanResult(result.data);
+      } else {
+        toast('未检测到二维码', true);
+      }
+    };
+    img.onerror = function () { toast('图片加载失败', true); };
+    img.src = dataUrl;
+  }
+
+  function showScanResult(data) {
+    var overlay = document.createElement('div');
+    overlay.className = 'scan-result';
+    overlay.innerHTML = '<h3>📋 扫描结果</h3>' +
+      '<div class="result-text">' + escapeHtml(data) + '</div>' +
+      '<div class="actions">' +
+        '<button class="tool" onclick="this.parentElement.parentElement.remove()">关闭</button>' +
+        '<button class="tool primary" id="copyScanResult">复制</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('copyScanResult').onclick = function () {
+      if (window.qrcode && window.qrcode.copyText) {
+        window.qrcode.copyText(data);
+        toast('已复制');
+      }
+    };
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ---------- Scan button (open file dialog or drag) ---------- */
+  function openScan() {
+    // Create a file input to select image
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function () {
+      if (this.files && this.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) { scanQR(e.target.result); };
+        reader.readAsDataURL(this.files[0]);
+      }
+      input.remove();
+    };
+    document.body.appendChild(input);
+    input.click();
+  }
+
+  /* ---------- Clear ---------- */
+  function clearAll() {
+    textInput.value = '';
+    canvas.hidden = true;
+    placeholder.style.display = '';
+    document.getElementById('downloadBtn').hidden = true;
+    document.getElementById('copyBtn').hidden = true;
+    qrDataUrl = '';
+    setStatus('');
+  }
+
+  /* ---------- Events ---------- */
+  document.getElementById('generateBtn').addEventListener('click', generateQR);
+  document.getElementById('downloadBtn').addEventListener('click', downloadQR);
+  document.getElementById('copyBtn').addEventListener('click', copyQR);
+  document.getElementById('scanBtn').addEventListener('click', openScan);
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+  document.getElementById('sizeSlider').addEventListener('input', function () {
+    document.getElementById('sizeVal').textContent = this.value;
+    if (qrDataUrl) generateQR(); // Auto-regenerate on size change
+  });
+  document.getElementById('fgColor').addEventListener('input', function () { if (qrDataUrl) generateQR(); });
+  document.getElementById('bgColor').addEventListener('input', function () { if (qrDataUrl) generateQR(); });
+  document.getElementById('correctLevel').addEventListener('change', function () { if (qrDataUrl) generateQR(); });
+
+  // Auto-generate on text input (with debounce)
+  var genTimer = null;
+  textInput.addEventListener('input', function () {
+    clearTimeout(genTimer);
+    genTimer = setTimeout(generateQR, 500);
+  });
+
+  // Drag & drop image
+  var dragCounter = 0;
+  document.addEventListener('dragenter', function (e) {
+    e.preventDefault();
+    dragCounter++;
+    var overlay = document.createElement('div');
+    overlay.className = 'drop-overlay';
+    overlay.id = 'dropOverlay';
+    overlay.textContent = '📷 拖入图片扫码';
+    document.body.appendChild(overlay);
+  });
+  document.addEventListener('dragleave', function (e) {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      var ov = document.getElementById('dropOverlay');
+      if (ov) ov.remove();
+    }
+  });
+  document.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dragCounter = 0;
+    var ov = document.getElementById('dropOverlay');
+    if (ov) ov.remove();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (ev) { scanQR(ev.target.result); };
+      reader.readAsDataURL(e.dataTransfer.files[0]);
+    }
+  });
+
+  // Paste image
+  document.addEventListener('paste', function (e) {
+    var items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') === 0) {
+        var file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          var reader = new FileReader();
+          reader.onload = function (ev) { scanQR(ev.target.result); };
+          reader.readAsDataURL(file);
+        }
+        break;
+      }
+    }
+  });
+
+  /* ---------- Rubick hooks ---------- */
+  if (typeof window.rubick !== 'undefined' && window.rubick) {
+    if (window.rubick.onPluginEnter) {
+      window.rubick.onPluginEnter(function (data) {
+        data = data || {};
+        var payload = data.payload;
+        if (data.code === 'qrcode-scan') {
+          if (data.type === 'img' && typeof payload === 'string') {
+            scanQR(payload);
+            return;
+          }
+          if (data.type === 'files' && Array.isArray(payload) && payload.length) {
+            var f = payload[0];
+            if (f && f.path && window.qrcode && window.qrcode.readImageFile) {
+              try {
+                var b64 = window.qrcode.readImageFile(f.path);
+                scanQR('data:image/png;base64,' + b64);
+                return;
+              } catch (e) {}
+            }
+          }
+        }
+        if (typeof payload === 'string' && payload.trim()) {
+          textInput.value = payload;
+          generateQR();
+        }
+      });
+    }
+    if (window.rubick.onPluginReady) {
+      window.rubick.onPluginReady(function () {
+        try { window.rubick.setExpendHeight(560); } catch (e) {}
+      });
+    }
+  }
+
+  // Init
+  setStatus('就绪 · 输入内容自动生成二维码 · 拖入/粘贴图片扫码');
+})();
+</script>
+</body>
+</html>

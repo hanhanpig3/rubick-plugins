@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>颜色工具箱</title>
+<style>
+  :root{--bg:#fff;--text:#1f2329;--sub:#8a919f;--border:#e8eaf0;--primary:#006eff;--soft:#e6f0ff;--danger:#ef4f4f;--radius:10px}
+  @media(prefers-color-scheme:dark){:root{--bg:#252533;--text:#e8eaf0;--sub:#9aa1ad;--border:#38384a;--soft:#1c2a44;--danger:#ff7875}}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;overflow:auto}
+  .app{max-width:560px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:14px}
+  .card{border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+  .card h3{font-size:13px;color:var(--sub);margin-bottom:10px;font-weight:400}
+  .color-input-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  input[type=color]{width:44px;height:36px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;background:transparent}
+  input[type=text]{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;font-family:"Cascadia Code",Consolas,monospace;background:transparent;color:var(--text);outline:none}
+  input[type=text]:focus{border-color:var(--primary)}
+  .format-list{display:flex;flex-direction:column;gap:6px}
+  .format-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:.15s}
+  .format-item:hover{background:var(--soft);border-color:var(--primary)}
+  .format-name{font-size:12px;color:var(--sub);width:50px;flex:none}
+  .format-val{flex:1;font-family:"Cascadia Code",Consolas,monospace;font-size:13px;word-break:break-all}
+  .format-copy{font-size:11px;color:var(--primary);opacity:0;transition:.15s}
+  .format-item:hover .format-copy{opacity:1}
+  .slider-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .slider-row label{font-size:12px;color:var(--sub);width:40px;flex:none}
+  input[type=range]{flex:1;height:4px;-webkit-appearance:none;background:var(--border);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--primary);cursor:pointer}
+  .slider-val{font-family:"Cascadia Code",Consolas,monospace;font-size:12px;width:36px;text-align:right;flex:none}
+  .preview-box{height:60px;border-radius:8px;border:1px solid var(--border);margin-bottom:10px;transition:background .2s}
+  .palette{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .swatch{width:36px;height:36px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:.15s}
+  .swatch:hover{border-color:var(--text);transform:scale(1.1)}
+  .swatch.active{border-color:var(--primary)}
+  .palette-title{font-size:12px;color:var(--sub);margin-top:10px;margin-bottom:4px}
+  .gradient-preview{height:40px;border-radius:8px;border:1px solid var(--border);margin:8px 0}
+  .btn{border:1px solid var(--border);background:transparent;color:var(--text);border-radius:8px;padding:5px 14px;font-size:12px;cursor:pointer;transition:.15s}
+  .btn:hover{background:var(--soft);border-color:var(--primary)}
+  .btn.primary{background:linear-gradient(135deg,#2f7bff,#006eff);color:#fff;border:none;font-weight:600}
+  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;z-index:50}
+  .css-output{font-family:"Cascadia Code",Consolas,monospace;font-size:12px;padding:8px 10px;background:var(--soft);border-radius:8px;word-break:break-all;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Color Picker -->
+  <div class="card">
+    <h3>🎨 取色器</h3>
+    <div class="color-input-row">
+      <input type="color" id="picker" value="#006eff" />
+      <input type="text" id="hexInput" value="#006eff" placeholder="#hex" />
+    </div>
+    <div class="preview-box" id="preview"></div>
+    <!-- Sliders -->
+    <div class="slider-row"><label>R</label><input type="range" id="rSlider" min="0" max="255" value="0" /><span class="slider-val" id="rVal">0</span></div>
+    <div class="slider-row"><label>G</label><input type="range" id="gSlider" min="0" max="255" value="110" /><span class="slider-val" id="gVal">110</span></div>
+    <div class="slider-row"><label>B</label><input type="range" id="bSlider" min="0" max="255" value="255" /><span class="slider-val" id="bVal">255</span></div>
+    <div class="slider-row"><label>A</label><input type="range" id="aSlider" min="0" max="100" value="100" /><span class="slider-val" id="aVal">100%</span></div>
+  </div>
+  <!-- Format Conversions -->
+  <div class="card">
+    <h3>📋 格式转换</h3>
+    <div class="format-list" id="formatList"></div>
+  </div>
+  <!-- Color Palette -->
+  <div class="card">
+    <h3>🎨 配色方案</h3>
+    <div id="paletteContainer"></div>
+  </div>
+  <!-- Gradient Generator -->
+  <div class="card">
+    <h3>🌈 渐变生成器</h3>
+    <div class="color-input-row">
+      <input type="color" id="gradStart" value="#667eea" />
+      <input type="color" id="gradEnd" value="#764ba2" />
+      <select id="gradType" style="border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:4px 8px;font-size:12px">
+        <option value="linear">线性</option>
+        <option value="radial">径向</option>
+      </select>
+      <button class="btn" id="gradRandom">随机</button>
+    </div>
+    <div class="gradient-preview" id="gradPreview"></div>
+    <div class="css-output" id="gradCSS" title="点击复制">background: linear-gradient(135deg, #667eea, #764ba2);</div>
+  </div>
+</div>
+<script>
+"use strict";
+function copyText(text){
+  if(window.rubick&&window.rubick.copyText){window.rubick.copyText(text);return true}
+  var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');document.body.removeChild(ta);return true}catch(e){document.body.removeChild(ta);return false}
+}
+function showToast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},1500)}
+
+/* ===== Color conversions ===== */
+function hexToRgb(hex){
+  hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(function(c){return c+c}).join('');
+  var r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+  return{r:r,g:g,b:b}
+}
+function rgbToHex(r,g,b){var h=function(n){return n.toString(16).padStart(2,'0')};return'#'+h(r)+h(g)+h(b)}
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  var max=Math.max(r,g,b),min=Math.min(r,g,b),h,s,l=(max+min)/2;
+  if(max===min){h=s=0}else{
+    var d=max-min;
+    s=l>0.5?d/(2-max-min):d/(max+min);
+    switch(max){
+      case r:h=(g-b)/d+(g<b?6:0);break;
+      case g:h=(b-r)/d+2;break;
+      case b:h=(r-g)/d+4;break;
+    }
+    h/=6;
+  }
+  return{h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)}
+}
+function hslToRgb(h,s,l){
+  h/=360;s/=100;l/=100;
+  var r,g,b;
+  if(s===0){r=g=b=l}else{
+    var hue2rgb=function(p,q,t){
+      if(t<0)t+=1;if(t>1)t-=1;
+      if(t<1/6)return p+(q-p)*6*t;
+      if(t<1/2)return q;
+      if(t<2/3)return p+(q-p)*(2/3-t)*6;
+      return p;
+    };
+    var q=l<0.5?l*(1+s):l+s-l*s;
+    var p=2*l-q;
+    r=hue2rgb(p,q,h+1/3);
+    g=hue2rgb(p,q,h);
+    b=hue2rgb(p,q,h-1/3);
+  }
+  return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)}
+}
+function rgbToHsv(r,g,b){
+  r/=255;g/=255;b/=255;
+  var max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,h,s=max;
+  v=max;s=max===0?0:d/max;
+  if(max===min){h=0}else{
+    switch(max){
+      case r:h=(g-b)/d+(g<b?6:0);break;
+      case g:h=(b-r)/d+2;break;
+      case b:h=(r-g)/d+4;break;
+    }
+    h/=6;
+  }
+  return{h:Math.round(h*360),s:Math.round(s*100),v:Math.round(v*100)}
+}
+
+/* ===== Current state ===== */
+var state={r:0,g:110,b:255,a:1};
+
+function updateFromRgb(){
+  var hex=rgbToHex(state.r,state.g,state.b);
+  var hsl=rgbToHsl(state.r,state.g,state.b);
+  var hsv=rgbToHsv(state.r,state.g,state.b);
+  // update picker
+  document.getElementById('picker').value=hex;
+  document.getElementById('hexInput').value=hex;
+  // update sliders
+  document.getElementById('rSlider').value=state.r;document.getElementById('rVal').textContent=state.r;
+  document.getElementById('gSlider').value=state.g;document.getElementById('gVal').textContent=state.g;
+  document.getElementById('bSlider').value=state.b;document.getElementById('bVal').textContent=state.b;
+  // update preview
+  var rgba='rgba('+state.r+', '+state.g+', '+state.b+', '+state.a+')';
+  document.getElementById('preview').style.background=rgba;
+  // update format list
+  var formats=[
+    {name:'HEX',val:hex.toUpperCase()},
+    {name:'RGBA',val:rgba},
+    {name:'RGB',val:'rgb('+state.r+', '+state.g+', '+state.b+')'},
+    {name:'HSL',val:'hsl('+hsl.h+', '+hsl.s+'%, '+hsl.l+'%)'},
+    {name:'HSLA',val:'hsla('+hsl.h+', '+hsl.s+'%, '+hsl.l+'%, '+state.a+')'},
+    {name:'HSV',val:'hsv('+hsv.h+', '+hsv.s+'%, '+hsv.v+'%)'},
+  ];
+  var list=document.getElementById('formatList');list.innerHTML='';
+  formats.forEach(function(f){
+    var item=document.createElement('div');item.className='format-item';
+    item.innerHTML='<span class="format-name">'+f.name+'</span><span class="format-val">'+f.val+'</span><span class="format-copy">复制</span>';
+    item.onclick=function(){copyText(f.val);showToast(f.name+': '+f.val+' 已复制')};
+    list.appendChild(item);
+  });
+  // update palette
+  renderPalette(hsl);
+}
+
+/* ===== Palette ===== */
+function renderPalette(hsl){
+  var container=document.getElementById('paletteContainer');container.innerHTML='';
+  var schemes=[
+    {title:'互补色',colors:[[hsl.h,(hsl.s),(hsl.l)],[(hsl.h+180)%360,hsl.s,hsl.l]]},
+    {title:'类似色',colors:[[hsl.h,hsl.s,hsl.l],[(hsl.h+30)%360,hsl.s,hsl.l],[(hsl.h+330)%360,hsl.s,hsl.l]]},
+    {title:'三角配色',colors:[[hsl.h,hsl.s,hsl.l],[(hsl.h+120)%360,hsl.s,hsl.l],[(hsl.h+240)%360,hsl.s,hsl.l]]},
+    {title:'明暗渐变',colors:[[hsl.h,hsl.s,Math.min(90,hsl.l+20)],[hsl.h,hsl.s,hsl.l],[hsl.h,hsl.s,Math.max(10,hsl.l-20)]]},
+  ];
+  schemes.forEach(function(s){
+    var t=document.createElement('div');t.className='palette-title';t.textContent=s.title;
+    var p=document.createElement('div');p.className='palette';
+    s.colors.forEach(function(c){
+      var rgb=hslToRgb(c[0],c[1],c[2]);
+      var hex=rgbToHex(rgb.r,rgb.g,rgb.b);
+      var sw=document.createElement('div');sw.className='swatch';sw.style.background=hex;
+      sw.title=hex.toUpperCase();
+      sw.onclick=function(){state.r=rgb.r;state.g=rgb.g;state.b=rgb.b;updateFromRgb()};
+      p.appendChild(sw);
+    });
+    container.append(t,p);
+  });
+}
+
+/* ===== Events ===== */
+document.getElementById('picker').addEventListener('input',function(e){
+  var rgb=hexToRgb(e.target.value);state.r=rgb.r;state.g=rgb.g;state.b=rgb.b;updateFromRgb();
+});
+document.getElementById('hexInput').addEventListener('input',function(e){
+  var v=e.target.value;if(/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)){
+    if(!v.startsWith('#'))v='#'+v;
+    var rgb=hexToRgb(v);state.r=rgb.r;state.g=rgb.g;state.b=rgb.b;updateFromRgb();
+  }
+});
+['r','g','b'].forEach(function(c){
+  document.getElementById(c+'Slider').addEventListener('input',function(e){
+    state[c]=parseInt(e.target.value);updateFromRgb();
+  });
+});
+document.getElementById('aSlider').addEventListener('input',function(e){
+  state.a=parseInt(e.target.value)/100;document.getElementById('aVal').textContent=e.target.value+'%';
+  updateFromRgb();
+});
+
+/* ===== Gradient ===== */
+function updateGradient(){
+  var s=document.getElementById('gradStart').value;
+  var e=document.getElementById('gradEnd').value;
+  var type=document.getElementById('gradType').value;
+  var css;
+  if(type==='linear'){css='background: linear-gradient(135deg, '+s+', '+e+');'}
+  else{css='background: radial-gradient(circle, '+s+', '+e+');'}
+  document.getElementById('gradPreview').style.cssText=css+'border-radius:8px;border:1px solid var(--border);margin:8px 0;';
+  document.getElementById('gradCSS').textContent=css;
+}
+['gradStart','gradEnd','gradType'].forEach(function(id){
+  document.getElementById(id).addEventListener('input',updateGradient);
+});
+document.getElementById('gradRandom').onclick=function(){
+  var rand=function(){return'#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0')};
+  document.getElementById('gradStart').value=rand();
+  document.getElementById('gradEnd').value=rand();
+  updateGradient();
+};
+document.getElementById('gradCSS').onclick=function(){copyText(this.textContent);showToast('CSS 已复制')};
+
+/* ===== init ===== */
+try{
+  if(window.rubick&&window.rubick.hooks){
+    window.rubick.hooks.onSearch=function(payload){};
+    window.rubick.hooks.onEnter=function(payload){
+      if(payload&&payload.text){var v=payload.text.trim();
+        if(/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)){
+          if(!v.startsWith('#'))v='#'+v;
+          document.getElementById('hexInput').value=v;
+          var rgb=hexToRgb(v);state.r=rgb.r;state.g=rgb.g;state.b=rgb.b;updateFromRgb();
+        }
+      }
+    };
+  }
+}catch(e){}
+updateFromRgb();updateGradient();
+</script>
+</body>
+</html>

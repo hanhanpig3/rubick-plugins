@@ -1,0 +1,53 @@
+{
+  "name": "rubick-dev-formatter",
+  "pluginName": "格式化工具",
+  "pluginType": "ui",
+  "description": "开发者格式化工具：JSON/SQL/XML/CSS 格式化与压缩 + 文本对比 Diff",
+  "author": "hanhanpig3",
+  "main": "index.html",
+  "logo": "logo.png",
+  "version": "0.1.0",
+  "preload": "preload.js",
+  "homePage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-json-editor",
+  "features": [
+    {
+      "code": "formatter",
+      "explain": "打开格式化工具（JSON/SQL/XML/CSS/Diff）",
+      "cmds": [
+        "格式化",
+        "json格式化",
+        "格式化工具",
+        "dev-formatter"
+      ]
+    },
+    {
+      "code": "json",
+      "explain": "JSON格式化/压缩/验证",
+      "cmds": [
+        "json",
+        "json format",
+        "json压缩",
+        "JSON"
+      ]
+    },
+    {
+      "code": "diff",
+      "explain": "文本对比工具",
+      "cmds": [
+        "文本对比",
+        "diff",
+        "对比文本",
+        "代码对比"
+      ]
+    },
+    {
+      "code": "sql-format",
+      "explain": "SQL格式化",
+      "cmds": [
+        "sql格式化",
+        "sql format",
+        "SQL格式化"
+      ]
+    }
+  ]
+}

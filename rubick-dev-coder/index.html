@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>编码转换</title>
+<style>
+  :root {
+    --bg:#fff;--text:#1f2329;--sub:#8a919f;--border:#e8eaf0;
+    --primary:#006eff;--soft:#e6f0ff;--danger:#ef4f4f;--ok:#2bb673;--radius:10px;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#252533;--text:#e8eaf0;--sub:#9aa1ad;--border:#38384a;
+    --soft:#1c2a44;--danger:#ff7875;--ok:#52c41a;
+  }}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;overflow:hidden}
+  .app{display:flex;flex-direction:column;height:100vh}
+  /* tabs */
+  .tabs{display:flex;gap:2px;padding:8px 12px 0;flex-wrap:wrap}
+  .tab{padding:6px 14px;border-radius:8px 8px 0 0;cursor:pointer;font-size:13px;color:var(--sub);border:1px solid transparent;border-bottom:none;transition:.15s;user-select:none}
+  .tab:hover{color:var(--text);background:var(--soft)}
+  .tab.active{background:var(--soft);color:var(--primary);font-weight:600;border-color:var(--border)}
+  /* main */
+  .main{flex:1;display:flex;flex-direction:column;padding:0 12px 12px;min-height:0}
+  .panel{flex:1;display:none;flex-direction:column;min-height:0}
+  .panel.active{display:flex}
+  .toolbar{display:flex;align-items:center;gap:6px;padding:8px 0;flex-wrap:wrap}
+  .btn{border:1px solid var(--border);background:transparent;color:var(--text);border-radius:8px;padding:5px 14px;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{background:var(--soft);border-color:var(--primary)}
+  .btn.primary{background:linear-gradient(135deg,#2f7bff,#006eff);color:#fff;border:none;font-weight:600}
+  .btn.accent{background:var(--soft);color:var(--primary);border-color:var(--primary);font-weight:600}
+  .flex{flex:1}
+  .label{font-size:11px;color:var(--sub);margin-right:2px}
+  select{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:3px 8px;font-size:12px;outline:none}
+  textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--text);padding:10px;font-size:13px;line-height:1.6;resize:none;outline:none;font-family:"Cascadia Code",Consolas,monospace}
+  textarea:focus{border-color:var(--primary)}
+  .io{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+  .io-row{flex:1;display:flex;flex-direction:column;min-height:60px}
+  .io-label{font-size:11px;color:var(--sub);padding:2px 0}
+  .status{font-size:12px;color:var(--sub);padding:4px 0;min-height:16px}
+  .status.err{color:var(--danger)}
+  .status.ok{color:var(--ok)}
+  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;z-index:50}
+  /* timestamp panel */
+  .ts-row{display:flex;gap:8px;align-items:center;padding:6px 0}
+  .ts-input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;background:transparent;color:var(--text);outline:none;font-family:"Cascadia Code",Consolas,monospace}
+  .ts-input:focus{border-color:var(--primary)}
+  .ts-result{font-family:"Cascadia Code",Consolas,monospace;font-size:14px;padding:8px 12px;background:var(--soft);border-radius:8px;word-break:break-all;min-height:40px}
+  /* hash panel */
+  .hash-list{display:flex;flex-direction:column;gap:8px;padding:8px 0}
+  .hash-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:8px}
+  .hash-name{font-weight:600;font-size:12px;width:70px;flex:none}
+  .hash-val{flex:1;font-family:"Cascadia Code",Consolas,monospace;font-size:12px;color:var(--sub);word-break:break-all}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tabs" id="tabs"></div>
+  <div class="main" id="main"></div>
+</div>
+<script>
+"use strict";
+/* ===== clipboard helper ===== */
+function copyText(text){
+  if(window.rubick&&window.rubick.copyText){window.rubick.copyText(text);return true}
+  var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');document.body.removeChild(ta);return true}catch(e){document.body.removeChild(ta);return false}
+}
+function showToast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},1500)}
+function copyAndToast(text){if(copyText(text))showToast('已复制到剪贴板');else showToast('复制失败')}
+
+/* ===== tabs config ===== */
+var TABS=[
+  {id:'base64',name:'Base64'},
+  {id:'url',name:'URL'},
+  {id:'html',name:'HTML实体'},
+  {id:'hex',name:'Hex'},
+  {id:'unicode',name:'Unicode'},
+  {id:'timestamp',name:'时间戳'},
+  {id:'hash',name:'Hash'},
+];
+var currentTab='base64';
+
+/* ===== render tabs ===== */
+function renderTabs(){
+  var c=document.getElementById('tabs');c.innerHTML='';
+  TABS.forEach(function(t){
+    var el=document.createElement('div');el.className='tab'+(t.id===currentTab?' active':'');el.textContent=t.name;
+    el.onclick=function(){currentTab=t.id;renderTabs();renderPanel()};
+    c.appendChild(el);
+  });
+}
+
+/* ===== render panel ===== */
+function renderPanel(){
+  var m=document.getElementById('main');m.innerHTML='';
+  var p=document.createElement('div');p.className='panel active';
+  switch(currentTab){
+    case 'base64':p.appendChild(codecPanel('Base64',encBase64,decBase64));break;
+    case 'url':p.appendChild(codecPanel('URL',encodeURIComponent,decodeURIComponent));break;
+    case 'html':p.appendChild(codecPanel('HTML实体',encHtml,decHtml));break;
+    case 'hex':p.appendChild(codecPanel('Hex',encHex,decHex));break;
+    case 'unicode':p.appendChild(codecPanel('Unicode',encUnicode,decUnicode));break;
+    case 'timestamp':p.appendChild(timestampPanel());break;
+    case 'hash':p.appendChild(hashPanel());break;
+  }
+  m.appendChild(p);
+}
+
+/* ===== codec panel (encode/decode) ===== */
+function codecPanel(label,encFn,decFn){
+  var wrap=document.createElement('div');wrap.className='io';
+  var statusId='st_'+label;
+  // toolbar
+  var tb=document.createElement('div');tb.className='toolbar';
+  var encBtn=document.createElement('button');encBtn.className='btn primary';encBtn.textContent='↓ 编码';
+  var decBtn=document.createElement('button');decBtn.className='btn accent';decBtn.textContent='↑ 解码';
+  var swapBtn=document.createElement('button');swapBtn.className='btn';swapBtn.textContent='⇅ 交换';
+  var clearBtn=document.createElement('button');clearBtn.className='btn';clearBtn.textContent='清空';
+  var copyBtn=document.createElement('button');copyBtn.className='btn';copyBtn.textContent='复制结果';
+  var sp=document.createElement('span');sp.className='flex';
+  var st=document.createElement('span');st.className='status';st.id=statusId;
+  tb.append(encBtn,decBtn,clearBtn,swapBtn,sp,copyBtn,st);
+  // input
+  var inRow=document.createElement('div');inRow.className='io-row';
+  var inLab=document.createElement('div');inLab.className='io-label';inLab.textContent='输入';
+  var inp=document.createElement('textarea');inp.placeholder='在此输入文本...';
+  inRow.append(inLab,inp);
+  // output
+  var outRow=document.createElement('div');outRow.className='io-row';
+  var outLab=document.createElement('div');outLab.className='io-label';outLab.textContent='输出';
+  var out=document.createElement('textarea');out.placeholder='结果...';out.readOnly=true;
+  outRow.append(outLab,out);
+  wrap.append(tb,inRow,outRow);
+  function setStatus(msg,isErr){st.textContent=msg;st.className='status '+(isErr?'err':'ok')}
+  encBtn.onclick=function(){
+    try{out.value=encFn(inp.value);setStatus('编码成功 ✓',false)}catch(e){setStatus('编码失败: '+e.message,true)}
+  };
+  decBtn.onclick=function(){
+    try{out.value=decFn(inp.value);setStatus('解码成功 ✓',false)}catch(e){setStatus('解码失败: '+e.message,true)}
+  };
+  swapBtn.onclick=function(){var t=inp.value;inp.value=out.value;out.value=t};
+  clearBtn.onclick=function(){inp.value='';out.value='';setStatus('')};
+  copyBtn.onclick=function(){if(out.value)copyAndToast(out.value)};
+  return wrap;
+}
+
+/* ===== encode/decode functions ===== */
+function encBase64(str){return btoa(unescape(encodeURIComponent(str)))}
+function decBase64(str){return decodeURIComponent(escape(atob(str.trim())))}
+function encHtml(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function decHtml(str){var d=document.createElement('div');d.innerHTML=str;return d.textContent}
+function encHex(str){var bytes=new TextEncoder().encode(str);var hex='';bytes.forEach(function(b){hex+=b.toString(16).padStart(2,'0')});return hex}
+function decHex(str){str=str.trim();var bytes=[];for(var i=0;i<str.length;i+=2){bytes.push(parseInt(str.substr(i,2),16))}return new TextDecoder().decode(new Uint8Array(bytes))}
+function encUnicode(str){var r='';for(var i=0;i<str.length;i++){var code=str.charCodeAt(i);if(code>127)r+='\\u'+code.toString(16).padStart(4,'0');else r+=str[i]}return r}
+function decUnicode(str){return str.replace(/\\u([\da-f]{4})/gi,function(m,g){return String.fromCharCode(parseInt(g,16))})}
+
+/* ===== timestamp panel ===== */
+function timestampPanel(){
+  var wrap=document.createElement('div');wrap.className='io';
+  var now=new Date();
+  // row: unix seconds
+  var row1=document.createElement('div');row1.className='ts-row';
+  var lab1=document.createElement('span');lab1.className='label';lab1.textContent='Unix时间戳(秒)';
+  var inp1=document.createElement('input');inp1.className='ts-input';inp1.value=Math.floor(Date.now()/1000);
+  var toDateBtn=document.createElement('button');toDateBtn.className='btn primary';toDateBtn.textContent='→ 日期';
+  var toNowBtn=document.createElement('button');toDateBtn.className='btn';toNowBtn.textContent='当前时间';
+  row1.append(lab1,inp1,ToDateBtn());
+  // We'll build properly below
+  // Rebuild cleanly
+  wrap.innerHTML='';
+  // Section 1: timestamp → date
+  var sec1=document.createElement('div');
+  sec1.innerHTML='<div class="io-label">Unix 时间戳 → 可读日期</div>';
+  var r1=document.createElement('div');r1.className='ts-row';
+  var i1=document.createElement('input');i1.className='ts-input';i1.placeholder='如 1700000000';i1.value=String(Math.floor(Date.now()/1000));
+  var b1=document.createElement('button');b1.className='btn primary';b1.textContent='转换 →';
+  var res1=document.createElement('div');res1.className='ts-result';res1.textContent='—';
+  r1.append(i1,b1);sec1.append(r1,res1);
+  // Section 2: date → timestamp
+  var sec2=document.createElement('div');sec2.style.marginTop='12px';
+  sec2.innerHTML='<div class="io-label">可读日期 → Unix 时间戳</div>';
+  var r2=document.createElement('div');r2.className='ts-row';
+  var i2=document.createElement('input');i2.className='ts-input';i2.placeholder='如 2024-01-01 12:00:00';i2.value=formatDate(now);
+  var b2=document.createElement('button');b2.className='btn accent';b2.textContent='转换 →';
+  var res2=document.createElement('div');res2.className='ts-result';res2.textContent='—';
+  r2.append(i2,b2);sec2.append(r2,res2);
+  // Section 3: quick buttons
+  var sec3=document.createElement('div');sec3.style.marginTop='12px';
+  var qb=document.createElement('div');qb.className='toolbar';
+  var nowBtn=document.createElement('button');nowBtn.className='btn';nowBtn.textContent='复制当前时间戳';
+  var msBtn=document.createElement('button');msBtn.className='btn';msBtn.textContent='复制毫秒时间戳';
+  qb.append(nowBtn,msBtn);
+  sec3.append(qb);
+  // handlers
+  b1.onclick=function(){
+    var ts=parseInt(i1.value.trim());
+    if(isNaN(ts)){res1.textContent='无效时间戳';res1.style.color='var(--danger)';return}
+    if(ts<1e12)ts*=1000; // auto-detect seconds vs ms
+    var d=new Date(ts);
+    res1.textContent=formatDate(d)+'\n'+d.toISOString();
+    res1.style.color='var(--text)';
+  };
+  b2.onclick=function(){
+    var d=new Date(i2.value.trim());
+    if(isNaN(d.getTime())){res2.textContent='无效日期';res2.style.color='var(--danger)';return}
+    res2.textContent='秒: '+Math.floor(d.getTime()/1000)+'\n毫秒: '+d.getTime();
+    res2.style.color='var(--text)';
+  };
+  nowBtn.onclick=function(){copyAndToast(String(Math.floor(Date.now()/1000)))};
+  msBtn.onclick=function(){copyAndToast(String(Date.now()))};
+  wrap.append(sec1,sec2,sec3);
+  return wrap;
+}
+function formatDate(d){
+  var p=function(n){return String(n).padStart(2,'0')};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+
+/* ===== hash panel ===== */
+function hashPanel(){
+  var wrap=document.createElement('div');wrap.className='io';
+  var tb=document.createElement('div');tb.className='toolbar';
+  var calcBtn=document.createElement('button');calcBtn.className='btn primary';calcBtn.textContent='计算 Hash';
+  var copyBtn=document.createElement('button');copyBtn.className='btn';copyBtn.textContent='复制全部';
+  tb.append(calcBtn,copyBtn);
+  var inRow=document.createElement('div');inRow.className='io-row';
+  inRow.innerHTML='<div class="io-label">输入文本</div>';
+  var inp=document.createElement('textarea');inp.placeholder='在此输入要计算哈希的文本...';inp.style.flex='1';
+  inRow.appendChild(inp);
+  var list=document.createElement('div');list.className='hash-list';
+  var algos=['MD5','SHA-1','SHA-256','SHA-512'];
+  algos.forEach(function(a){
+    var item=document.createElement('div');item.className='hash-item';
+    item.innerHTML='<span class="hash-name">'+a+'</span><span class="hash-val" id="hash_'+a.replace('-','_')+'">—</span>';
+    var cp=document.createElement('button');cp.className='btn';cp.textContent='复制';cp.style.flex='none';
+    cp.onclick=function(){
+      var v=document.getElementById('hash_'+a.replace('-','_')).textContent;
+      if(v&&v!=='—')copyAndToast(v);
+    };
+    item.appendChild(cp);
+    list.appendChild(item);
+  });
+  wrap.append(tb,inRow,list);
+  calcBtn.onclick=function(){
+    var text=inp.value;if(!text){showToast('请输入文本');return}
+    algos.forEach(function(a){
+      var el=document.getElementById('hash_'+a.replace('-','_'));el.textContent='计算中...';
+    });
+    if(window.crypto&&crypto.subtle){
+      // SHA via Web Crypto
+      algos.filter(function(a){return a!=='MD5'}).forEach(function(a){
+        var alg=a.replace('-','SHA-');
+        crypto.subtle.digest(alg,new TextEncoder().encode(text)).then(function(buf){
+          var hex='';var bytes=new Uint8Array(buf);
+          bytes.forEach(function(b){hex+=b.toString(16).padStart(2,'0')});
+          document.getElementById('hash_'+a.replace('-','_')).textContent=hex;
+        });
+      });
+      // MD5 via JS implementation
+      document.getElementById('hash_MD5').textContent=md5(text);
+    }else{
+      // fallback: all via JS
+      document.getElementById('hash_MD5').textContent=md5(text);
+      document.getElementById('hash_SHA_1').textContent='需要 Web Crypto API';
+      document.getElementById('hash_SHA_256').textContent='需要 Web Crypto API';
+      document.getElementById('hash_SHA_512').textContent='需要 Web Crypto API';
+    }
+  };
+  copyBtn.onclick=function(){
+    var parts=[];
+    algos.forEach(function(a){
+      var v=document.getElementById('hash_'+a.replace('-','_')).textContent;
+      if(v&&v!=='—'&&v!=='计算中...')parts.push(a+': '+v);
+    });
+    if(parts.length)copyAndToast(parts.join('\n'));
+  };
+  return wrap;
+}
+
+/* ===== MD5 implementation (compact) ===== */
+function md5(str){
+  function rh(n){var s='',j;for(j=0;j<=3;j++){s+=((n>>(j*8+4))&0x0F).toString(16)+((n>>(j*8))&0x0F).toString(16)}return s}
+  function ad(x,y){var l=(x&0xFFFF)+(y&0xFFFF);var m=(x>>16)+(y>>16)+(l>>16);return(m<<16)|(l&0xFFFF)}
+  function rl(x,c){return(x<<c)|(x>>>(32-c))}
+  function cm(q,a,b,x,s,t){return ad(rl(ad(ad(a,q),ad(x,t)),s),b)}
+  function ff(a,b,c,d,x,s,t){return cm((b&c)|(~b&d),a,b,x,s,t)}
+  function gg(a,b,c,d,x,s,t){return cm((b&d)|(c&~d),a,b,x,s,t)}
+  function hh(a,b,c,d,x,s,t){return cm(b^c^d,a,b,x,s,t)}
+  function ii(a,b,c,d,x,s,t){return cm(c^(b|~d),a,b,x,s,t)}
+  function cv(s){
+    var u=str.length,bl=s.length*8,i;str+=String.fromCharCode(0x80);
+    while(str.length%64)str+=String.fromCharCode(0);
+    var arr=new Array(str.length/64);
+    for(i=0;i<arr.length;i++){
+      var chunk=str.substr(i*64,64);
+      arr[i]=new Array(16);
+      for(var j=0;j<16;j++){
+        arr[i][j]=(chunk.charCodeAt(j*4))|(chunk.charCodeAt(j*4+1)<<8)|(chunk.charCodeAt(j*4+2)<<16)|(chunk.charCodeAt(j*4+3)<<24);
+      }
+    }
+    str=u;
+    var H0=0x67452301,H1=0xEFCDAB89,H2=0x98BADCFE,H3=0x10325476;
+    var A,B,C,D,K,X,i2;
+    for(i2=0;i2<arr.length;i2++){
+      X=arr[i2];A=H0;B=H1;C=H2;D=H3;
+      A=ff(A,B,C,D,X[0],7,0xD76AA478);D=ff(D,A,B,C,X[1],12,0xE8C7B756);C=ff(C,D,A,B,X[2],17,0x242070DB);B=ff(B,C,D,A,X[3],22,0xC1BDCEEE);
+      A=ff(A,B,C,D,X[4],7,0xF57C0FAF);D=ff(D,A,B,C,X[5],12,0x4787C62A);C=ff(C,D,A,B,X[6],17,0xA8304613);B=ff(B,C,D,A,X[7],22,0xFD469501);
+      A=ff(A,B,C,D,X[8],7,0x698098D8);D=ff(D,A,B,C,X[9],12,0x8B44F7AF);C=ff(C,D,A,B,X[10],17,0xFFFF5BB1);B=ff(B,C,D,A,X[11],22,0x895CD7BE);
+      A=ff(A,B,C,D,X[12],7,0x6B901122);D=ff(D,A,B,C,X[13],12,0xFD987193);C=ff(C,D,A,B,X[14],17,0xA679438E);B=ff(B,C,D,A,X[15],22,0x49B40821);
+      A=gg(A,B,C,D,X[1],5,0xF61E2562);D=gg(D,A,B,C,X[6],9,0xC040B340);C=gg(C,D,A,B,X[11],14,0x265E5A51);B=gg(B,C,D,A,X[0],20,0xE9B6C7AA);
+      A=gg(A,B,C,D,X[5],5,0xD62F105D);D=gg(D,A,B,C,X[10],9,0x02441453);C=gg(C,D,A,B,X[15],14,0xD8A1E681);B=gg(B,C,D,A,X[4],20,0xE7D3FBC8);
+      A=gg(A,B,C,D,X[9],5,0x21E1CDE6);D=gg(D,A,B,C,X[14],9,0xC33707D6);C=gg(C,D,A,B,X[3],14,0xF4D50D87);B=gg(B,C,D,A,X[8],20,0x455A14ED);
+      A=gg(A,B,C,D,X[13],5,0xA9E3E905);D=gg(D,A,B,C,X[2],9,0xFCEFA3F8);C=gg(C,D,A,B,X[7],14,0x676F02D9);B=gg(B,C,D,A,X[12],20,0x8D2A4C8A);
+      A=hh(A,B,C,D,X[5],4,0xFFFA3942);D=hh(D,A,B,C,X[8],11,0x8771F681);C=hh(C,D,A,B,X[11],16,0x6D9D6122);B=hh(B,C,D,A,X[14],23,0xFDE5380C);
+      A=hh(A,B,C,D,X[1],4,0xA4BEEA44);D=hh(D,A,B,C,X[4],11,0x4BDECFA9);C=hh(C,D,A,B,X[7],16,0xF6BB4B60);B=hh(B,C,D,A,X[10],23,0xBEBFBC70);
+      A=hh(A,B,C,D,X[13],4,0x289B7EC6);D=hh(D,A,B,C,X[0],11,0xEAA127FA);C=hh(C,D,A,B,X[3],16,0xD4EF3085);B=hh(B,C,D,A,X[6],23,0x04881D05);
+      A=hh(A,B,C,D,X[9],4,0xD9D4D039);D=hh(D,A,B,C,X[12],11,0xE6DB99E5);C=hh(C,D,A,B,X[15],16,0x1FA27CF8);B=hh(B,C,D,A,X[2],23,0xC4AC5665);
+      A=ii(A,B,C,D,X[0],6,0xF4292244);D=ii(D,A,B,C,X[7],10,0x432AFF97);C=ii(C,D,A,B,X[14],15,0xAB9423A7);B=ii(B,C,D,A,X[5],21,0xFC93A039);
+      A=ii(A,B,C,D,X[12],6,0x655B59C3);D=ii(D,A,B,C,X[3],10,0x8F0CCC92);C=ii(C,D,A,B,X[10],15,0xFFEFF47D);B=ii(B,C,D,A,X[1],21,0x85845DD1);
+      A=ii(A,B,C,D,X[8],6,0x6FA87E4F);D=ii(D,A,B,C,X[15],10,0xFE2CE6E0);C=ii(C,D,A,B,X[6],15,0xA3014314);B=ii(B,C,D,A,X[13],21,0x4E0811A1);
+      A=ii(A,B,C,D,X[4],6,0xF7537E82);D=ii(D,A,B,C,X[11],10,0xBD3AF235);C=ii(C,D,A,B,X[2],15,0x2AD7D2BB);B=ii(B,C,D,A,X[9],21,0xEB86D391);
+      H0=ad(H0,A);H1=ad(H1,B);H2=ad(H2,C);H3=ad(H3,D);
+    }
+    return rh(H0)+rh(H1)+rh(H2)+rh(H3);
+  }
+  return cv(str);
+}
+
+/* ===== init ===== */
+/* auto-fill from Rubick search payload */
+try{
+  if(window.rubick&&window.rubick.hooks){
+    window.rubick.hooks.onSearch=function(payload){
+      // payload.code tells which feature triggered
+    };
+    window.rubick.hooks.onEnter=function(payload){
+      if(payload&&payload.text){
+        // fill input with search text
+        setTimeout(function(){
+          var ta=document.querySelector('textarea');
+          if(ta)ta.value=payload.text;
+        },100);
+      }
+    };
+  }
+}catch(e){}
+renderTabs();renderPanel();
+</script>
+</body>
+</html>

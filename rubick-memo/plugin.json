@@ -1,0 +1,46 @@
+{
+  "name": "rubick-memo",
+  "pluginName": "备忘快贴",
+  "pluginType": "ui",
+  "description": "快速记录备忘内容，一键复制粘贴到剪贴板",
+  "author": "local",
+  "main": "index.html",
+  "logo": "logo.png",
+  "version": "0.2.1",
+  "preload": "preload.js",
+  "homePage": "https://github.com/rubickCenter/rubick",
+  "features": [
+    {
+      "code": "memos",
+      "explain": "打开备忘快贴：查看、添加、复制、删除备忘",
+      "cmds": [
+        "备忘快贴",
+        "备忘",
+        "备忘录",
+        "memo",
+        "memos"
+      ]
+    },
+    {
+      "code": "add",
+      "explain": "添加备忘",
+      "cmds": [
+        {
+          "type": "over",
+          "label": "添加备忘",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      ]
+    },
+    {
+      "code": "paste",
+      "explain": "复制最新一条备忘到剪贴板",
+      "cmds": [
+        "粘贴备忘",
+        "复制备忘",
+        "paste memo"
+      ]
+    }
+  ]
+}

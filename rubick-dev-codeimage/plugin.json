@@ -1,0 +1,35 @@
+{
+  "name": "rubick-dev-codeimage",
+  "pluginName": "代码截图",
+  "pluginType": "ui",
+  "description": "代码截图工具：语法高亮（190+语言）、多主题切换、窗口美化、行号、一键导出 PNG 或复制到剪贴板",
+  "author": "hanhanpig3",
+  "main": "index.html",
+  "logo": "logo.png",
+  "version": "0.1.0",
+  "preload": "preload.js",
+  "homePage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-code-image",
+  "features": [
+    {
+      "code": "codeimage",
+      "explain": "打开代码截图工具",
+      "cmds": [
+        "代码截图",
+        "code image",
+        "代码图片",
+        "codeimage",
+        "dev-codeimage"
+      ]
+    },
+    {
+      "code": "codeimage-text",
+      "explain": "将选中的代码生成截图",
+      "cmds": [
+        {
+          "type": "text",
+          "label": "代码截图"
+        }
+      ]
+    }
+  ]
+}

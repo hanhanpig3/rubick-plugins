@@ -1,0 +1,18 @@
+{
+  "name": "rubick-dev-regexp",
+  "version": "0.1.0",
+  "description": "正则表达式测试工具：实时匹配高亮、捕获组展示、替换预览、常用正则速查模板",
+  "main": "index.html",
+  "logo": "logo.png",
+  "pluginType": "ui",
+  "preload": "preload.js",
+  "author": "hanhanpig3",
+  "license": "MIT",
+  "homepage": "https://github.com/liriliri/tinker/tree/master/plugins/tinker-regexp",
+  "files": [
+    "index.html",
+    "plugin.json",
+    "preload.js",
+    "logo.png"
+  ]
+}
