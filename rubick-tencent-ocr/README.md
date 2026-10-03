@@ -78,7 +78,24 @@
 
 ## 配置（3 个必填参数）
 
-编辑 `config.js`，填入你的密钥即可：
+### 密钥存储位置说明
+
+⚠️ **重要**：密钥**不存储在 `config.js` 文件中**！
+
+- `config.js` 仅作为**默认值/示例**，供首次加载参考，实际运行时不会被使用
+- 真正的密钥存储在 **Rubick 的 localStorage / dbStorage** 中（加密存储于 LevelDB 数据库）
+- 存储位置：`%APPDATA%\rubick\default\` 目录下的 LevelDB 文件
+- 存储键名：`rubick-tencent-ocr-config`
+
+### 填写方式
+
+**方式 1：插件内设置（推荐）**
+
+1. 打开插件，点击右上角 **⚙ 设置** 按钮
+2. 填入 SecretId、SecretKey、Region
+3. 点击保存
+
+**方式 2：编辑 config.js（仅首次使用）**
 
 ```js
 window.TC_OCR_CONFIG = {
@@ -89,7 +106,7 @@ window.TC_OCR_CONFIG = {
 };
 ```
 
-> 也可以在插件右上角「设置」里直接填，效果相同；填写英文数字以外的字符请勿带空格。
+> 填写英文数字以外的字符请勿带空格。修改 `config.js` 后需重启 Rubick 才能生效。
 
 ## 安装
 

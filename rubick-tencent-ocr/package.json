@@ -3,7 +3,7 @@
     "description":  "腾讯云 OCR：高精度文字/手写体/表格/发票/身份证/银行卡/车牌等多类型识别，表格结果可粘到 Excel 保留格式",
     "main":  "index.html",
     "preload":  "preload.js",
-    "version":  "0.2.2",
+    "version": "0.2.3",
     "author":  "hanhanpig3",
     "logo":  "logo.png",
     "features":  [

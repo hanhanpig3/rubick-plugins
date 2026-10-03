@@ -439,7 +439,10 @@
   function clearImg() {
     currentSrc = '';
     currentResp = null;
-    document.getElementById('img').hidden = true;
+    var img = document.getElementById('img');
+    img.src = '';
+    img.removeAttribute('src');
+    img.hidden = true;
     document.getElementById('placeholder').style.display = '';
     document.getElementById('clearImg').hidden = true;
     document.getElementById('imgBox').classList.remove('has-img');
@@ -837,7 +840,8 @@
     fileInput.accept = 'image/*';
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
-    fileInput.addEventListener('change', function () {
+    fileInput.addEventListener('change', function (e) {
+      e.preventDefault();
       if (this.files && this.files[0]) {
         var f = this.files[0];
         readFileAsDataURL(f, function (dataUrl) {
@@ -845,9 +849,15 @@
           recognizeFromDataUrl(dataUrl);
         });
       }
+      // 清空 value 允许重复选择同一文件
       this.value = '';
     });
-    imgBox.addEventListener('click', function () { fileInput.click(); });
+    // 阻止事件冒泡，避免重复触发
+    imgBox.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      fileInput.click();
+    });
     imgBox.addEventListener('dragover', function (e) { e.preventDefault(); });
     imgBox.addEventListener('drop', function (e) {
       e.preventDefault();
